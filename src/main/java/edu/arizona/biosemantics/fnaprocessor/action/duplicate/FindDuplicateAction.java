@@ -3,6 +3,7 @@ package edu.arizona.biosemantics.fnaprocessor.action.duplicate;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -19,14 +20,10 @@ import edu.arizona.biosemantics.fnaprocessor.action.VolumeAction;
 public class FindDuplicateAction implements VolumeAction {
 	
 	private static Logger logger = Logger.getLogger(FindDuplicateAction.class);
-	
-	public FindDuplicateAction() {
-		// TODO Auto-generated constructor stub
-	}
 
 	@Override
 	public void run(File volumeDir) throws JDOMException, IOException {
-		logger.info("--------------------------------------");
+		StringBuilder report = new StringBuilder();
 		logger.info("Finding duplicates for " + volumeDir.getAbsolutePath());
 		Map<String, Set<File>> seenNumbers = new HashMap<String, Set<File>>();
 		
@@ -53,10 +50,17 @@ public class FindDuplicateAction implements VolumeAction {
 		for(String number : seenNumbers.keySet()) {
 			if(seenNumbers.get(number).size() > 1) {
 				logger.info("Duplicates for number: " + number);
+				report.append("Duplicates for number: " + number + "\n");
 				for(File file : seenNumbers.get(number)) {
+					report.append(file.getAbsolutePath() + "\n");
 					logger.info(file.getAbsolutePath());
 				}
 			}
+		}
+		
+		try(PrintWriter out = new PrintWriter(
+				new File(volumeDir, "duplicates.txt"))) {
+		    out.println(report.toString());
 		}
 	}
 

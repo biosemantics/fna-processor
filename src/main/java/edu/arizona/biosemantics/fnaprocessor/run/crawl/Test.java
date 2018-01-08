@@ -1,18 +1,5 @@
 package edu.arizona.biosemantics.fnaprocessor.run.crawl;
 
-import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-
-import edu.arizona.biosemantics.fnaprocessor.eflorascrawler.CrawlState;
-import edu.arizona.biosemantics.fnaprocessor.eflorascrawler.CrawlStateProvider;
-import edu.arizona.biosemantics.fnaprocessor.eflorascrawler.CrawlStateStorer;
-import edu.arizona.biosemantics.fnaprocessor.eflorascrawler.SerializedCrawlStateProvider;
-import edu.arizona.biosemantics.fnaprocessor.eflorascrawler.SerializedCrawlStateStorer;
-
 public class Test {
 
 	public static void main(String[] args) throws Exception {

@@ -18,7 +18,7 @@ public class SerializedCrawlStateProvider implements CrawlStateProvider {
 	private Map<String, String> volumeUrlNameMap;
 
 	@Inject
-	public SerializedCrawlStateProvider(@Named("serializedCrawlStateStorer_targetDir") File crawlStateDir, 
+	public SerializedCrawlStateProvider(@Named("serializedCrawlStateDir") File crawlStateDir, 
 			@Named("volumeUrlNameMap") Map<String, String> volumeUrlNameMap) {
 		this.crawlStateDir = crawlStateDir;
 		this.volumeUrlNameMap = volumeUrlNameMap;

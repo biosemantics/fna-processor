@@ -67,7 +67,7 @@ public class VolumeCrawler implements CrawlStateProvider {
 				Element liLinkToLowerlist = panelTaxonTreatment.selectFirst("li[name=\"liLinkToLowerList\"]");
 				Element lblTaxonDesc = panelTaxonTreatment.selectFirst("#lblTaxonDesc");
 				if(liLinkToLowerlist != null) {
-
+						
 					//a single taxon treatment page with a links to lower taxa on page
 					Element lowerTaxaLink = liLinkToLowerlist.selectFirst("a[title=\"lower taxa\"]");
 					if(lowerTaxaLink != null) 
@@ -87,7 +87,7 @@ public class VolumeCrawler implements CrawlStateProvider {
 				logger.warn("Page without panelTaxonList but also without panelTaxonTreatment");
 		}
 	}
-
+	
 	private String normalizeTaxonName(String value) {
 		return value.trim().replaceAll("[^a-zA-Z_0-9.<>\\s]", "").replaceAll("\\s+", " ").toLowerCase();
 	}

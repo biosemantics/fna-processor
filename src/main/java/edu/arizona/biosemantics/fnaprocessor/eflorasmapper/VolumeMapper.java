@@ -6,16 +6,12 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
 import edu.arizona.biosemantics.fnaprocessor.eflorascrawler.CrawlState;
 import edu.arizona.biosemantics.fnaprocessor.eflorascrawler.CrawlStateProvider;
-import edu.arizona.biosemantics.fnaprocessor.eflorascrawler.documentretrieval.CrawlStateBasedDocumentRetriever;
-import edu.arizona.biosemantics.fnaprocessor.eflorascrawler.documentretrieval.DocumentRetriever;
 import edu.arizona.biosemantics.fnaprocessor.taxonname.TaxonNameExtractor;
 
 /**
@@ -84,7 +80,7 @@ public class VolumeMapper implements MapStateProvider {
 				return f.isFile() && f.getName().endsWith(".xml");
 			}
 		})) {
-			logger.trace(file.getName());
+			//logger.trace(file.getName());
 			//logger.info(taxonNameExtractor.extract(file));
 			
 			Set<String> extractedNameOptions = taxonNameExtractor.extract(file);

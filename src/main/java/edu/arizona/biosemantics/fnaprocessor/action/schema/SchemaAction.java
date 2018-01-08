@@ -3,12 +3,10 @@ package edu.arizona.biosemantics.fnaprocessor.action.schema;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.io.StringReader;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -24,7 +22,6 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
 import edu.arizona.biosemantics.fnaprocessor.action.VolumeAction;
-import edu.arizona.biosemantics.fnaprocessor.action.taxonname.TaxonNameValidator;
 
 public class SchemaAction implements VolumeAction {
 

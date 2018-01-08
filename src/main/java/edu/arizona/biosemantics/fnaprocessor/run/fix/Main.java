@@ -3,9 +3,6 @@ package edu.arizona.biosemantics.fnaprocessor.run.fix;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
-import edu.arizona.biosemantics.fnaprocessor.run.Run;
-import edu.arizona.biosemantics.fnaprocessor.run.fix.Config;
-
 public class Main {
 
 	public static void main(String[] args) throws Exception {

@@ -15,9 +15,9 @@ import com.google.inject.name.Named;
 
 import edu.arizona.biosemantics.fnaprocessor.eflorascrawler.CrawlState;
 import edu.arizona.biosemantics.fnaprocessor.eflorascrawler.CrawlStateProvider;
-import edu.arizona.biosemantics.fnaprocessor.taxonname.AcceptedNameExtractor;
-import edu.arizona.biosemantics.fnaprocessor.taxonname.AnyNameExtractor;
 import edu.arizona.biosemantics.fnaprocessor.taxonname.FileNameExtractor;
+import edu.arizona.biosemantics.fnaprocessor.taxonname.combinatorics.AcceptedNameExtractor;
+import edu.arizona.biosemantics.fnaprocessor.taxonname.combinatorics.AnyNameExtractor;
 
 public class MapStateReporter {
 
@@ -77,7 +77,7 @@ public class MapStateReporter {
 		logger.info("*** Did not map the following " + getUnmappedFiles(mapState).size() + " files: ");
 		for(File file : getUnmappedFiles(mapState)) {
 			logger.info(file.getName());
-			logger.info("* Accepted name candidates: ");
+			/*logger.info("* Accepted name candidates: ");
 			for(String name : this.acceptedNameExtractor.extract(file)) {
 				logger.info("-> " + name);
 			}
@@ -88,7 +88,7 @@ public class MapStateReporter {
 			logger.info("* Name candidates considering filename info: ");
 			for(String name : this.fileNameExtractor.extract(file)) {
 				logger.info("-> " + name);
-			}
+			}*/
 		}
 
 		logger.info("*** Did not find a file for the following " + mapState.getUnmappedUrls().size() + " crawled urls");

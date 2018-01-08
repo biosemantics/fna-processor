@@ -8,10 +8,6 @@ import org.apache.log4j.Logger;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
-import edu.arizona.biosemantics.fnaprocessor.eflorascrawler.CrawlState;
-import edu.arizona.biosemantics.fnaprocessor.eflorascrawler.CrawlStateProvider;
-import edu.arizona.biosemantics.fnaprocessor.eflorascrawler.CrawlStateStorer;
-import edu.arizona.biosemantics.fnaprocessor.eflorascrawler.VolumeCrawler;
 import edu.arizona.biosemantics.fnaprocessor.eflorasmapper.MapState;
 import edu.arizona.biosemantics.fnaprocessor.eflorasmapper.MapStateReporter;
 import edu.arizona.biosemantics.fnaprocessor.eflorasmapper.MapStateStorer;

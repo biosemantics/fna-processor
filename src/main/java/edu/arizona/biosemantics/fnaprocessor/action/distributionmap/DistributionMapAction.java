@@ -3,7 +3,6 @@ package edu.arizona.biosemantics.fnaprocessor.action.distributionmap;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +13,9 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
 
 import edu.arizona.biosemantics.fnaprocessor.action.VolumeAction;
 import edu.arizona.biosemantics.fnaprocessor.eflorascrawler.CrawlState;
@@ -31,9 +33,10 @@ public class DistributionMapAction implements VolumeAction {
 	private Map<File, String> volumeDirUrlMap;
 	private CrawlStateProvider crawlStateProvider;
 
+	@Inject
 	public DistributionMapAction(CrawlStateProvider crawlStateProvider, MapStateProvider mapStateProvider,
 			HrefResolver hrefResolver, 
-			Map<File, String> volumeDirUrlMap) {
+			@Named("volumeDirUrlMap") Map<File, String> volumeDirUrlMap) {
 		this.mapStateProvider = mapStateProvider;
 		this.crawlStateProvider = crawlStateProvider;
 		this.hrefResolver = hrefResolver;
@@ -47,11 +50,11 @@ public class DistributionMapAction implements VolumeAction {
 		
 		CrawlStateBasedDocumentRetriever crawlStateBasedDocumentRetriever = 
 				new CrawlStateBasedDocumentRetriever(crawlState);
-		for(Element element : document.select("#lblObjectList > a")) {
+		for(Element element : document.select("#lblObjectList a")) {
 			if(element.ownText().trim().equalsIgnoreCase("Distribution Map")) {
 				Document distributionDocument = crawlStateBasedDocumentRetriever.getDocument(hrefResolver.getHref(baseUrl, element));
 				
-				Elements imageElements = distributionDocument.select("#panelContent > img");
+				Elements imageElements = distributionDocument.select("#panelContent img");
 				for(Element imageElement : imageElements)
 					result.add(imageElement.attr("src"));
 			}
@@ -61,6 +64,7 @@ public class DistributionMapAction implements VolumeAction {
 
 	@Override
 	public void run(File volumeDir) throws Exception {
+		logger.info("Running DistributionMapAction for " + volumeDir);
 		MapState mapState = mapStateProvider.getMapState(volumeDir);
 		CrawlState crawlState = crawlStateProvider.getCrawlState(volumeDirUrlMap.get(volumeDir));
 		for(File file : volumeDir.listFiles(new FileFilter() {
@@ -71,16 +75,19 @@ public class DistributionMapAction implements VolumeAction {
 		})) {
 			if(mapState.hasUrl(file)) {
 				String url = mapState.getUrl(file);
+				logger.info(url);
 				List<String> foundImages = extractDistributionMappingImage(url, crawlState);
 
 				if(foundImages.isEmpty())
 					logger.warn("Did not find distribution map for file " + file);
+				else 
+					logger.trace("Found a distribution ma for file " + file);
 				
 				for(String imageUrl : foundImages) {
 					//Open a URL Stream
 					Response resultImageResponse = Jsoup.connect(imageUrl).ignoreContentType(true).execute();
 					try(FileOutputStream out = (new FileOutputStream(
-							new java.io.File(file.getParentFile(), file.getName() + imageUrl.substring(imageUrl.lastIndexOf(".")))))) {
+							new java.io.File(file.getParentFile(), file.getName().replaceAll(".xml", "") + imageUrl.substring(imageUrl.lastIndexOf(".")))))) {
 						out.write(resultImageResponse.bodyAsBytes());
 					}
 				}				

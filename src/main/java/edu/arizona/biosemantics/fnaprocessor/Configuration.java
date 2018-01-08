@@ -11,7 +11,7 @@ public class Configuration {
 		try {
 			ClassLoader loader = Thread.currentThread().getContextClassLoader();
 			properties = new Properties(); 
-			properties.load(loader.getResourceAsStream("edu/arizona/biosemantics/fnafix/config.properties"));
+			properties.load(loader.getResourceAsStream("edu/arizona/biosemantics/fnaprocessor/config.properties"));
 			
 			fnaTextProcessingDirectory = properties.getProperty("fnaTextProcessingDirectory");
 		} catch(Exception e) {

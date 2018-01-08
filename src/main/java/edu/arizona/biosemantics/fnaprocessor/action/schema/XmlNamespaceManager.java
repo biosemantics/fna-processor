@@ -1,13 +1,10 @@
 package edu.arizona.biosemantics.fnaprocessor.action.schema;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -16,8 +13,6 @@ import org.jdom2.Namespace;
 import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
-
-import com.google.inject.Inject;
 
 public class XmlNamespaceManager {
 

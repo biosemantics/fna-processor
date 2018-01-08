@@ -10,7 +10,6 @@ import org.apache.log4j.Logger;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
-import edu.arizona.biosemantics.fnaprocessor.eflorascrawler.CrawlState;
 import edu.arizona.biosemantics.fnaprocessor.eflorascrawler.SerializedCrawlStateStorer;
 
 public class SerializedMapStateStorer implements MapStateStorer {
@@ -20,7 +19,7 @@ public class SerializedMapStateStorer implements MapStateStorer {
 	private Map<String, String> volumeUrlNameMap;
 
 	@Inject
-	public SerializedMapStateStorer(@Named("serializedMapStateStorer_targetDir")File targetDir, 
+	public SerializedMapStateStorer(@Named("serializedMapStateDir")File targetDir, 
 			@Named("volumeUrlNameMap")Map<String, String> volumeUrlNameMap) {
 		this.targetDir = targetDir;
 		this.volumeUrlNameMap = volumeUrlNameMap;

@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.google.inject.AbstractModule;
 import com.google.inject.TypeLiteral;
 import com.google.inject.name.Names;
 
@@ -21,7 +20,6 @@ import edu.arizona.biosemantics.fnaprocessor.eflorascrawler.documentretrieval.Do
 import edu.arizona.biosemantics.fnaprocessor.run.BaseConfig;
 import edu.arizona.biosemantics.fnaprocessor.run.Run;
 import edu.arizona.biosemantics.fnaprocessor.run.crawl.CrawlEfloraVolumesAndSerializeToDiskRun;
-import edu.arizona.biosemantics.fnaprocessor.taxonname.TaxonNameExtractor;
 
 public class Config extends BaseConfig {
 

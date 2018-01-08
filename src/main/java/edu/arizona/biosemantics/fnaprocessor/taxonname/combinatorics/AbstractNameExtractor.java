@@ -1,4 +1,4 @@
-package edu.arizona.biosemantics.fnaprocessor.taxonname;
+package edu.arizona.biosemantics.fnaprocessor.taxonname.combinatorics;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,6 +16,8 @@ import org.jdom2.Document;
 import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
 
+import edu.arizona.biosemantics.fnaprocessor.taxonname.TaxonNameExtractor;
+
 public abstract class AbstractNameExtractor implements TaxonNameExtractor {
 
 	private static Logger logger = Logger.getLogger(AbstractNameExtractor.class);
@@ -23,7 +25,7 @@ public abstract class AbstractNameExtractor implements TaxonNameExtractor {
 
 	public static void main(String[] args) throws JDOMException, IOException {
 		AcceptedNameExtractor extr = new AcceptedNameExtractor();
-		logger.info(extr.extract(new File("C:\\Users\\updates\\git\\FNATextProcessing\\V19-20-21\\v20-1123.xml")));
+		logger.info(extr.extract(new File("C:\\Users\\updates\\git\\FNATextProcessing\\V19-20-21\\v20-1123.xml")).size());
 	}
 	
 	@Override
@@ -37,10 +39,10 @@ public abstract class AbstractNameExtractor implements TaxonNameExtractor {
 		LinkedHashMap<String, Set<String>> rankNameOptions = createRankNameOptions(document);
 		
 		double maxN = Math.pow(2, rankNameOptions.size());
-		logger.trace("maxN: " + maxN);
+		//logger.trace("maxN: " + maxN);
 		for(int n = 0; n < maxN; n++) {
 			String enabledNameParameters = String.format("%" + rankNameOptions.size() + "s", Integer.toBinaryString(n)).replace(' ', '0');
-			logger.info(n + " / " + maxN);
+			//logger.info(n + " / " + maxN);
 			//logger.info(enabledNameParameters);
 			if(enabledNameParameters.equals("11111111"))
 				System.out.println();
@@ -77,7 +79,7 @@ public abstract class AbstractNameExtractor implements TaxonNameExtractor {
 	
 	private List<String> getNameVariants(LinkedHashMap<String, Set<String>> rankNameOptions,
 			LinkedHashMap<String, Boolean> enabledNames, LinkedHashMap<String, Boolean> enabledAbbreviations) {
-		logger.trace("get name variants1");
+		//logger.trace("get name variants1");
 		StringBuilder templateSb = new StringBuilder();
 		for (String rank : rankNameOptions.keySet()) {
 			if(enabledNames.get(rank)) {
@@ -87,7 +89,7 @@ public abstract class AbstractNameExtractor implements TaxonNameExtractor {
 				templateSb.append("<" + rank + "> ");
 			}			
 		}
-		logger.trace("get name variants2");
+		//logger.trace("get name variants2");
 		
 		String template = templateSb.toString();
 		List<String> nameSkeletons = new ArrayList<String>(Arrays.asList(template));
@@ -98,14 +100,15 @@ public abstract class AbstractNameExtractor implements TaxonNameExtractor {
 			}
 			nameSkeletons = newNameSkeletons;
 		}
-		logger.trace("get name variants3");
+		//logger.trace("get name variants3");
 		
 		List<String> result = new ArrayList<String>();
 		for(String name : nameSkeletons) {
 			name = normalizeTaxonName(name);
 			if(!name.isEmpty())
 				result.add(name);
-		}logger.trace("get name variants4");
+		}
+		//logger.trace("get name variants4");
 		
 		return result;
 	}

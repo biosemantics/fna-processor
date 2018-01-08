@@ -2,23 +2,47 @@ package edu.arizona.biosemantics.fnaprocessor.run.fix;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
+import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
 import edu.arizona.biosemantics.fnaprocessor.action.VolumeAction;
+import edu.arizona.biosemantics.fnaprocessor.action.distributionmap.DistributionMapAction;
+import edu.arizona.biosemantics.fnaprocessor.action.duplicate.FindDuplicateAction;
+import edu.arizona.biosemantics.fnaprocessor.action.key.KeyAction;
+import edu.arizona.biosemantics.fnaprocessor.action.printlocation.PrintLocationAction;
+import edu.arizona.biosemantics.fnaprocessor.action.taxonname.TaxonNameValidationAction;
 import edu.arizona.biosemantics.fnaprocessor.run.Run;
 
 public class FixFnaVolumesRun implements Run {
 
 	private List<VolumeAction> actions;
 	private File volumesDir;
+	private Map<File, String> volumeDirUrlMap;
 
+	@Inject
 	public FixFnaVolumesRun(
-			@Named("volumesDirectory") File volumesDir,
-			List<VolumeAction> actions) {
+			@Named("volumesDir") File volumesDir,
+			@Named("volumeDirUrlMap") Map<File, String> volumeDirUrlMap,
+			FindDuplicateAction findDuplicateAction,
+			TaxonNameValidationAction taxonNameValidationAction,
+			//KeyAction keyAction,
+			DistributionMapAction distributionMapAction,
+			PrintLocationAction printLocationAction) {
 		this.volumesDir = volumesDir;
-		this.actions = actions;
+		VolumeAction[] a = { 
+				//findDuplicateAction, 
+				//taxonNameValidationAction, 
+				//printLocationAction, 
+				distributionMapAction,
+				//keyAction 
+				};
+		this.volumeDirUrlMap = volumeDirUrlMap;
+		this.actions = new ArrayList<VolumeAction>(Arrays.asList(a));
 	}
 	
 	@Override
@@ -26,10 +50,12 @@ public class FixFnaVolumesRun implements Run {
 		for(VolumeAction action : actions) {
 			for(File volumeDir : volumesDir.listFiles(new FileFilter() {
 					public boolean accept(File file) {
-						return file.isDirectory();
+						return file.isDirectory() && !file.getName().startsWith(".");
 					}
 				})) {
-				action.run(volumeDir);
+				if(volumeDirUrlMap.containsKey(volumeDir)) {
+					action.run(volumeDir);
+				}
 			}
 		}
 	}

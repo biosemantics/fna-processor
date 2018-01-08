@@ -15,6 +15,9 @@ import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
+
 import edu.arizona.biosemantics.fnaprocessor.action.VolumeAction;
 import edu.uci.ics.jung.graph.DirectedSparseGraph;
 
@@ -25,19 +28,23 @@ public class KeyAction implements VolumeAction {
 	private Map<String, Document> documentCache = new HashMap<String, Document>();
 	private Map<String, TaxonConcept> taxonConceptUrlMap = new HashMap<String, TaxonConcept>();
 	private Map<TaxonConcept, String> taxonConceptReverseUrlMap = new HashMap<TaxonConcept, String>();
-	private Map<File, String> volumeUrlMap = new HashMap<File, String>();
+	private Map<File, String> volumeDirUrlMap = new HashMap<File, String>();
 
 	private String baseUrl;
 
-	public KeyAction(String baseUrl, Map<File, String> volumeUrlMap) {
+	@Inject
+	public KeyAction(String baseUrl, 
+			@Named("volumeDirUrlMap")Map<File, String> volumeDirUrlMap) {
 		this.baseUrl = baseUrl;
-		this.volumeUrlMap = volumeUrlMap;
+		this.volumeDirUrlMap = volumeDirUrlMap;
 	}
 	
 	@Override
 	public void run(File volumeDir) throws Exception {
-		if(volumeUrlMap.containsKey(volumeDir)) {
-			Document doc = this.getDocument(volumeUrlMap.get(volumeDir));
+		logger.info("Running KeyAction for " + volumeDir);
+		
+		if(volumeDirUrlMap.containsKey(volumeDir)) {
+			Document doc = this.getDocument(volumeDirUrlMap.get(volumeDir));
 			Element tbody = doc.selectFirst("#ucFloraTaxonList_panelTaxonList");
 			
 			//for each family

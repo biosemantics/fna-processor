@@ -1,15 +1,11 @@
 package edu.arizona.biosemantics.fnaprocessor.eflorasmapper;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
 
 public class MapState implements Serializable {
 

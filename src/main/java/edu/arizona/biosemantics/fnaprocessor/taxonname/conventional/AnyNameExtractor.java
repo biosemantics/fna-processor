@@ -1,4 +1,4 @@
-package edu.arizona.biosemantics.fnaprocessor.taxonname;
+package edu.arizona.biosemantics.fnaprocessor.taxonname.conventional;
 
 import java.util.ArrayList;
 import java.util.Arrays;
