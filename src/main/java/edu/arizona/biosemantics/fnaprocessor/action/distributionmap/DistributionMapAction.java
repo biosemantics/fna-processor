@@ -75,7 +75,6 @@ public class DistributionMapAction implements VolumeAction {
 		})) {
 			if(mapState.hasUrl(file)) {
 				String url = mapState.getUrl(file);
-				logger.info(url);
 				List<String> foundImages = extractDistributionMappingImage(url, crawlState);
 
 				if(foundImages.isEmpty())
@@ -85,10 +84,17 @@ public class DistributionMapAction implements VolumeAction {
 				
 				for(String imageUrl : foundImages) {
 					//Open a URL Stream
-					Response resultImageResponse = Jsoup.connect(imageUrl).ignoreContentType(true).execute();
-					try(FileOutputStream out = (new FileOutputStream(
-							new java.io.File(file.getParentFile(), file.getName().replaceAll(".xml", "") + imageUrl.substring(imageUrl.lastIndexOf(".")))))) {
-						out.write(resultImageResponse.bodyAsBytes());
+					Response resultImageResponse = null;
+					try {
+						resultImageResponse = Jsoup.connect(imageUrl).ignoreContentType(true).execute();
+					} catch(Exception e) {
+						logger.error("Failed to load image from " + imageUrl, e);
+					}
+					if(resultImageResponse != null) {
+						try(FileOutputStream out = (new FileOutputStream(
+								new java.io.File(file.getParentFile(), file.getName().replaceAll(".xml", "") + "-distributionmap" + imageUrl.substring(imageUrl.lastIndexOf(".")))))) {
+							out.write(resultImageResponse.bodyAsBytes());
+						}
 					}
 				}				
 			} else {

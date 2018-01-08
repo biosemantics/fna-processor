@@ -69,7 +69,7 @@ public class PrintLocationAction implements VolumeAction {
 					logger.warn("Did not find print location for file " + file);
 				}
 			} else {
-				logger.error("Missing file to report print location for file " + file);
+				logger.error("Missing file to document mapping for file " + file);
 			}
 		}
 	}
