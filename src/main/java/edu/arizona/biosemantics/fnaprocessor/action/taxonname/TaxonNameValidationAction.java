@@ -2,15 +2,10 @@ package edu.arizona.biosemantics.fnaprocessor.action.taxonname;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.jdom2.JDOMException;
 
-import edu.arizona.biosemantics.fnaprocessor.VolumeAction;
+import edu.arizona.biosemantics.fnaprocessor.action.VolumeAction;
 
 public class TaxonNameValidationAction implements VolumeAction {
 
