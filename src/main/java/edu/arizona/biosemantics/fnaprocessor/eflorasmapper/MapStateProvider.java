@@ -4,6 +4,7 @@ import java.io.File;
 
 public interface MapStateProvider {
 
-	public MapState getMapState(File volumeDir) throws Exception;
+	public MapState getMapState(File volumeDir, MapState mapState) throws Exception;
 
+	
 }

@@ -1,4 +1,4 @@
-package edu.arizona.biosemantics.fnaprocessor.eflorasmapper;
+package edu.arizona.biosemantics.fnaprocessor.eflorasmapper.number;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -27,11 +27,13 @@ import com.google.inject.name.Named;
 import edu.arizona.biosemantics.common.taxonomy.Rank;
 import edu.arizona.biosemantics.fnaprocessor.eflorascrawler.CrawlState;
 import edu.arizona.biosemantics.fnaprocessor.eflorascrawler.CrawlStateProvider;
+import edu.arizona.biosemantics.fnaprocessor.eflorasmapper.MapState;
+import edu.arizona.biosemantics.fnaprocessor.eflorasmapper.MapStateProvider;
 import edu.arizona.biosemantics.fnaprocessor.taxonname.TaxonNameExtractor;
 
-public class VolumeMapper2 implements MapStateProvider {
+public class NumberBasedVolumeMapper implements MapStateProvider {
 	
-	private static final Logger logger = Logger.getLogger(VolumeMapper2.class);
+	private static final Logger logger = Logger.getLogger(NumberBasedVolumeMapper.class);
 	private Set<File> filesWithoutNumber = new HashSet<File>();
 	private Map<String, File> knownUrlFileMap;
 	private TaxonNameExtractor taxonNameExtractor;
@@ -44,7 +46,7 @@ public class VolumeMapper2 implements MapStateProvider {
 			xFactory.compile("//number", Filters.element());
 
 	@Inject
-	public VolumeMapper2(
+	public NumberBasedVolumeMapper(
 			@Named("volumeMapper_taxonNameExtractor") TaxonNameExtractor taxonNameExtractor,
 			CrawlStateProvider crawlStateProvider,
 			@Named("knownFileUrlMap") Map<String, File> knownFileUrlMap, 
@@ -56,13 +58,8 @@ public class VolumeMapper2 implements MapStateProvider {
 	}
 	
 	@Override
-	public MapState getMapState(File volumeDir) throws Exception {
-		return this.map(volumeDir);
-	}
-	
-	public MapState map(File volumeDir) throws Exception {
+	public MapState getMapState(File volumeDir, MapState mapState) throws Exception {
 		String volumeUrl = this.volumeDirUrlMap.get(volumeDir);
-		MapState mapState = new MapState(volumeUrl);
 		CrawlState crawlState = this.crawlStateProvider.getCrawlState(volumeUrl);
 	
 		Map<String, Set<String>> sourceTargetMapping = getSourceTargetMapping(crawlState);
@@ -83,9 +80,11 @@ public class VolumeMapper2 implements MapStateProvider {
 					if(isSingleTaxonPage(targetDocument)) {
 						if(actualSource.equals(volumeUrl)) {
 							//map by number only and files that only have a family name element
-							mapFamily(targetUrl, volumeDir, mapState, crawlState);
+							if(!mapState.hasFile(targetUrl))
+								mapFamily(targetUrl, volumeDir, mapState, crawlState);
 						} else {
-							map(targetUrl, actualSource, volumeDir, mapState, crawlState);
+							if(!mapState.hasFile(targetUrl))
+								map(targetUrl, actualSource, volumeDir, mapState, crawlState);
 						}
 					}
 					urlQueue.push(targetUrl);

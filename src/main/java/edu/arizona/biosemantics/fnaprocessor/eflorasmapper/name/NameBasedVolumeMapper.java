@@ -1,4 +1,4 @@
-package edu.arizona.biosemantics.fnaprocessor.eflorasmapper;
+package edu.arizona.biosemantics.fnaprocessor.eflorasmapper.name;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -28,63 +28,28 @@ import com.google.inject.name.Named;
 
 import edu.arizona.biosemantics.fnaprocessor.eflorascrawler.CrawlState;
 import edu.arizona.biosemantics.fnaprocessor.eflorascrawler.CrawlStateProvider;
+import edu.arizona.biosemantics.fnaprocessor.eflorasmapper.MapState;
+import edu.arizona.biosemantics.fnaprocessor.eflorasmapper.MapStateProvider;
 import edu.arizona.biosemantics.fnaprocessor.taxonname.TaxonNameExtractor;
 
 /**
  * Maps the files of a volume to a Efloras document
  */
-public class VolumeMapper implements MapStateProvider {
+public class NameBasedVolumeMapper implements MapStateProvider {
 	
-	private static final Logger logger = Logger.getLogger(VolumeMapper.class);
-	private Map<String, File> knownUrlFileMap;
+	private static final Logger logger = Logger.getLogger(NameBasedVolumeMapper.class);
 	private TaxonNameExtractor taxonNameExtractor;
 	private CrawlStateProvider crawlStateProvider;
 	private Map<File, String> volumeDirUrlMap;
 
 	@Inject
-	public VolumeMapper(
+	public NameBasedVolumeMapper(
 			@Named("volumeMapper_taxonNameExtractor") TaxonNameExtractor taxonNameExtractor,
 			CrawlStateProvider crawlStateProvider,
-			@Named("knownFileUrlMap") Map<String, File> knownFileUrlMap, 
 			@Named("volumeDirUrlMap")Map<File, String> volumeDirUrlMap) {
 		this.volumeDirUrlMap = volumeDirUrlMap;
-		this.knownUrlFileMap = knownFileUrlMap;
 		this.crawlStateProvider = crawlStateProvider;
 		this.taxonNameExtractor = taxonNameExtractor;
-	}
-	
-	public MapState map(File volumeDir) throws Exception {
-		String volumeUrl = this.volumeDirUrlMap.get(volumeDir);
-		MapState mapState = new MapState(volumeUrl);
-		CrawlState crawlState = this.crawlStateProvider.getCrawlState(volumeUrl);
-		
-		for(String url : knownUrlFileMap.keySet()) {
-			mapState.putFileUrlMap(knownUrlFileMap.get(url), url);
-		}
-		logger.trace("Done mapping known urls");
-		
-		int i=0; 
-		logger.info("Starting to map the " + crawlState.getUrls().size() + " urls");
-		for(String url : crawlState.getUrls()) {
-
-			String[] familyNumber = this.getFamilyNumber(crawlState, url);
-			String name = crawlState.getLinkName(url);
-			logger.trace(i++ + " " + name + ": " + url);
-			
-			//a single (not-yet mapped) taxon treatment page
-			if(name != null && !this.knownUrlFileMap.containsKey(url)) {
-				File file = this.getVolumeFileWithInfo(volumeDir, familyNumber, name);
-				if(file == null) {
-					mapState.addUnmappedUrls(url);
-					logger.error("Could not map document with name: " + name + " to file: " + url);
-				} else {
-					mapState.putFileUrlMap(file, url);
-					logger.trace("mapped file to document");
-				}
-				
-			}
-		}
-		return mapState;
 	}
 
 	private File getVolumeFileWithInfo(File volumeDir, String[] familyNumber, String name) throws Exception {
@@ -196,8 +161,33 @@ public class VolumeMapper implements MapStateProvider {
 	}
 
 	@Override
-	public MapState getMapState(File volumeDir) throws Exception {
-		return this.map(volumeDir);
+	public MapState getMapState(File volumeDir, MapState mapState) throws Exception {
+		String volumeUrl = this.volumeDirUrlMap.get(volumeDir);
+		CrawlState crawlState = this.crawlStateProvider.getCrawlState(volumeUrl);
+		
+		int i=0; 
+		logger.info("Starting to map the " + crawlState.getUrls().size() + " urls");
+		for(String url : crawlState.getUrls()) {
+
+			String[] familyNumber = this.getFamilyNumber(crawlState, url);
+			String name = crawlState.getLinkName(url);
+			logger.trace(i++ + " " + name + ": " + url);
+			
+			//a single (not-yet mapped) taxon treatment page
+			if(name != null) {
+				File file = this.getVolumeFileWithInfo(volumeDir, familyNumber, name);
+				if(file == null) {
+					logger.error("Could not map document with name: " + name + " to file: " + url);
+				} else {
+					if(!mapState.hasFile(url)) {
+						mapState.putFileUrlMap(file, url);
+						logger.trace("mapped file to document");
+					}
+				}
+				
+			}
+		}
+		return mapState;
 	}
 	
 	private String normalizeTaxonName(String value) {

@@ -31,9 +31,7 @@ public class SerializedMapStateProvider implements MapStateProvider {
 	}
 	
 	@Override
-	public MapState getMapState(File volumeDir) throws Exception {
-		System.out.println(volumeDirUrlMap.get(volumeDir));
-		System.out.println( volumeUrlNameMap.get(volumeDirUrlMap.get(volumeDir)));
+	public MapState getMapState(File volumeDir, MapState mapState) throws Exception {
 		try(ObjectInputStream in = new ObjectInputStream(new FileInputStream(
 				new File(mapStateDir, volumeUrlNameMap.get(volumeDirUrlMap.get(volumeDir)))))) {
             Object object = in.readObject();

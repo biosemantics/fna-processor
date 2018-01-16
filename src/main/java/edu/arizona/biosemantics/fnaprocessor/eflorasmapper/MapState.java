@@ -9,17 +9,12 @@ import java.util.Map;
 
 public class MapState implements Serializable {
 
-	private List<String> unmappedUrls = new ArrayList<String>();
 	private Map<File, String> fileUrlMap = new HashMap<File, String>();
 	private Map<String, File> urlFileMap = new HashMap<String, File>();
 	private String volumeUrl;
 	
 	public MapState(String volumeUrl) {
 		this.volumeUrl = volumeUrl;
-	}
-
-	public List<String> getUnmappedUrls() {
-		return this.unmappedUrls;
 	}
 	
 	public List<File> getMappedFiles() {
@@ -33,18 +28,12 @@ public class MapState implements Serializable {
 	public void reset() {
 		this.fileUrlMap = new HashMap<File, String>();
 		this.urlFileMap = new HashMap<String, File>();
-		this.unmappedUrls = new ArrayList<String>();
 	}
-
+	
 	public void putFileUrlMap(File file, String url) {
 		this.fileUrlMap.put(file, url);
 		this.urlFileMap.put(url, file);	
 	}
-
-	public void addUnmappedUrls(String url) {
-		this.unmappedUrls.add(url);
-	}
-
 	
 	public String getUrl(File file) {
 		return fileUrlMap.get(file);

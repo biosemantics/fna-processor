@@ -34,7 +34,8 @@ public class DistributionMapAction implements VolumeAction {
 	private CrawlStateProvider crawlStateProvider;
 
 	@Inject
-	public DistributionMapAction(CrawlStateProvider crawlStateProvider, MapStateProvider mapStateProvider,
+	public DistributionMapAction(CrawlStateProvider crawlStateProvider, 
+			@Named("serializedMapStateProvider") MapStateProvider mapStateProvider,
 			HrefResolver hrefResolver, 
 			@Named("volumeDirUrlMap") Map<File, String> volumeDirUrlMap) {
 		this.mapStateProvider = mapStateProvider;
@@ -65,7 +66,7 @@ public class DistributionMapAction implements VolumeAction {
 	@Override
 	public void run(File volumeDir) throws Exception {
 		logger.info("Running DistributionMapAction for " + volumeDir);
-		MapState mapState = mapStateProvider.getMapState(volumeDir);
+		MapState mapState = mapStateProvider.getMapState(volumeDir, new MapState(volumeDirUrlMap.get(volumeDir)));
 		CrawlState crawlState = crawlStateProvider.getCrawlState(volumeDirUrlMap.get(volumeDir));
 		for(File file : volumeDir.listFiles(new FileFilter() {
 			@Override

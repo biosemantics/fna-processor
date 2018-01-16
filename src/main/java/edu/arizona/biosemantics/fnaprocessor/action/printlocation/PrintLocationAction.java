@@ -35,7 +35,8 @@ public class PrintLocationAction implements VolumeAction {
 	private Map<File, String> volumeDirUrlMap;
 
 	@Inject
-	public PrintLocationAction(CrawlStateProvider crawlStateProvider, MapStateProvider mapStateProvider,
+	public PrintLocationAction(CrawlStateProvider crawlStateProvider, 
+			@Named("serializedMapStateProvider") MapStateProvider mapStateProvider,
 			@Named("volumeDirUrlMap") Map<File, String> volumeDirUrlMap) {
 		this.mapStateProvider = mapStateProvider;
 		this.crawlStateProvider = crawlStateProvider;
@@ -45,7 +46,7 @@ public class PrintLocationAction implements VolumeAction {
 	@Override
 	public void run(File volumeDir) throws Exception {
 		logger.info("Running PrintLocationAction for " + volumeDir);
-		MapState mapState = mapStateProvider.getMapState(volumeDir);
+		MapState mapState = mapStateProvider.getMapState(volumeDir, new MapState(volumeDirUrlMap.get(volumeDir)));
 		CrawlState crawlState = crawlStateProvider.getCrawlState(volumeDirUrlMap.get(volumeDir));
 		
 		for(File file : volumeDir.listFiles(new FileFilter() {
