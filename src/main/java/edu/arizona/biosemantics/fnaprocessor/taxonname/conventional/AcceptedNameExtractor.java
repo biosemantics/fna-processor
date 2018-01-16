@@ -32,7 +32,32 @@ public class AcceptedNameExtractor extends AbstractNameExtractor {
 			}	
 		};
 		acceptedNameElements.sort(rankComparator);
+		
 		LinkedHashMap<String, Set<String>> rankNameOptions = new LinkedHashMap<String, Set<String>>();
+		
+		
+		/**
+		 * to apply the <genus specis> is atomic name rule remove species and stuff it into genus element
+		 * 
+		 */
+		//cannot do this rule: there is still possibility of subgenus and superspecies etc. ranks.
+		//Or do they never exist in FNA?
+		/*Element genusElement = null;
+		Element speciesElement = null;
+		for(Element acceptedNameElement : acceptedNameElements) {
+			String rank = normalizeTaxonName(acceptedNameElement.getAttributeValue("rank"));
+			if(rank.equals("genus")) {
+				genusElement = acceptedNameElement;
+			}
+			if(rank.equals("species")) {
+				speciesElement = acceptedNameElement;
+			}
+		}
+		if(genusElement != null && speciesElement != null) {
+			acceptedNameElements.remove(speciesElement);
+			genusElement.setText(genusElement.getValue() + speciesElement.getValue());
+		}*/
+		
 		for(Element acceptedNameElement : acceptedNameElements) {
 			String rank = normalizeTaxonName(acceptedNameElement.getAttributeValue("rank"));
 			rankNameOptions.put(rank, new HashSet<String>(Arrays.asList(normalizeTaxonName(acceptedNameElement.getValue()))));

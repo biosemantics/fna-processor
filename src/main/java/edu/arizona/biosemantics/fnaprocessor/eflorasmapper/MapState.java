@@ -11,6 +11,7 @@ public class MapState implements Serializable {
 
 	private List<String> unmappedUrls = new ArrayList<String>();
 	private Map<File, String> fileUrlMap = new HashMap<File, String>();
+	private Map<String, File> urlFileMap = new HashMap<String, File>();
 	private String volumeUrl;
 	
 	public MapState(String volumeUrl) {
@@ -31,11 +32,13 @@ public class MapState implements Serializable {
 	
 	public void reset() {
 		this.fileUrlMap = new HashMap<File, String>();
+		this.urlFileMap = new HashMap<String, File>();
 		this.unmappedUrls = new ArrayList<String>();
 	}
 
 	public void putFileUrlMap(File file, String url) {
 		this.fileUrlMap.put(file, url);
+		this.urlFileMap.put(url, file);	
 	}
 
 	public void addUnmappedUrls(String url) {
@@ -53,5 +56,13 @@ public class MapState implements Serializable {
 
 	public String getVolumeUrl() {
 		return volumeUrl;
+	}
+	
+	public boolean hasFile(String url) {
+		return this.urlFileMap.containsKey(url);
+	}
+
+	public File getFile(String url) {
+		return this.urlFileMap.get(url);
 	}
 }

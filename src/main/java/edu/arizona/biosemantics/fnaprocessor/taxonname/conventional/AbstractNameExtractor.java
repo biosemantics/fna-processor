@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -68,10 +69,41 @@ public abstract class AbstractNameExtractor implements TaxonNameExtractor {
 			}
 		}
 		
+		/**
+		 * Make sure to include the binomial name in either case
+		 */
+		result.addAll(this.getConsecutiveNameForRanks(rankNameOptions, "genus", "species"));
+		
+		/**
+		 * Make sure to include the binomial + variety name in either case
+		 */
+		result.addAll(this.getConsecutiveNameForRanks(rankNameOptions, "genus", "species", "variety"));
+		
+		/**
+		 * Make sure to include binomial + subspecies name in either case
+		 */
+		result.addAll(this.getConsecutiveNameForRanks(rankNameOptions, "genus", "species", "subspecies"));
+		
 		nameExtractionCache.put(file, result);
 		return result;
 	}
 	
+	private Collection<? extends String> getConsecutiveNameForRanks(LinkedHashMap<String, Set<String>> rankNameOptions,
+			String... ranks) {
+		LinkedHashMap<String, Set<String>> rankNameOptionsBinomial = new LinkedHashMap<String, Set<String>>();
+		LinkedHashMap<String, Boolean> enabledAbbreviations = new LinkedHashMap<String, Boolean>();
+		Map<String, Boolean> enabledNames = new LinkedHashMap<String, Boolean>();
+		
+		for(String rank : ranks) {
+			if(!rankNameOptions.containsKey(rank))
+				return new HashSet<String>();
+			rankNameOptionsBinomial.put(rank, rankNameOptions.get(rank));
+			enabledAbbreviations.put(rank, false);	
+			enabledNames.put(rank, true);
+		}
+		return this.getNameVariants(rankNameOptionsBinomial, enabledNames, enabledAbbreviations);
+	}
+
 	private List<String> getNameVariants(LinkedHashMap<String, Set<String>> rankNameOptions,
 			Map<String, Boolean> enabledNames, Map<String, Boolean> enabledAbbreviations) {
 		StringBuilder templateSb = new StringBuilder();

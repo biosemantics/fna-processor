@@ -21,9 +21,9 @@ import edu.arizona.biosemantics.fnaprocessor.taxonname.FileNameExtractor;
 import edu.arizona.biosemantics.fnaprocessor.taxonname.combinatorics.AcceptedNameExtractor;
 import edu.arizona.biosemantics.fnaprocessor.taxonname.combinatorics.AnyNameExtractor;
 
-public class MapStateReporter {
+public class MapStateReporter2 {
 
-	private static Logger logger = Logger.getLogger(MapStateReporter.class);
+	private static Logger logger = Logger.getLogger(MapStateReporter2.class);
 	private AcceptedNameExtractor acceptedNameExtractor;
 	private AnyNameExtractor anyNameExtractor;
 	private FileNameExtractor fileNameExtractor;
@@ -31,7 +31,7 @@ public class MapStateReporter {
 	private Map<String, File> volumeUrlDirMap;
 	
 	@Inject
-	public MapStateReporter(AcceptedNameExtractor acceptedNameExtractor, AnyNameExtractor anyNameExtractor, 
+	public MapStateReporter2(AcceptedNameExtractor acceptedNameExtractor, AnyNameExtractor anyNameExtractor, 
 			FileNameExtractor fileNameExtractor, CrawlStateProvider crawlStateProvider,
 			@Named("volumeUrlDirMap") Map<String, File> volumeUrlDirMap) {
 		this.acceptedNameExtractor = acceptedNameExtractor;
@@ -51,35 +51,7 @@ public class MapStateReporter {
 			String linkName = crawlState.getLinkName(url);
 			logger.info(file.getName() + " -> (" + linkName + ") " + url);
 		}
-		
-		List<File> acceptedNameMappedFiles = getAcceptedNameMappedFiles(crawlState, mapState);
-		logger.info("*** Mapped the following " + acceptedNameMappedFiles.size() + " files sucessfully using the accepted name: ");
-		for(File file : acceptedNameMappedFiles) {
-			String url = mapState.getUrl(file);
-			String linkName = crawlState.getLinkName(url);
-			logger.info(file.getName() + " -> (" + linkName + ") " + url);
-		}
-		
-		List<File> synonymMappedFiles = getSynonymMappedFiles(crawlState, mapState);
-		logger.info("*** Mapped the following " + synonymMappedFiles.size() + " files successfully by considering synonym information: ");
-		for(File file : synonymMappedFiles) {
-			String url = mapState.getUrl(file);
-			String linkName = crawlState.getLinkName(url);
-			logger.info(file.getName() + " -> (" + linkName + ") " + url);
-		}
-
-		List<File> fileNameMappedFiles = getFileNameMappedFiles(crawlState, mapState);
-		logger.info("*** Mapped the following " + fileNameMappedFiles.size() + " files successfully by using the file name: ");
-		for(File file : fileNameMappedFiles) {
-			String url = mapState.getUrl(file);
-			String linkName = crawlState.getLinkName(url);
-			logger.info(file.getName() + " -> (" + linkName + ") " + url);
-		}
-		
-
-		//TODO: Run over mapstate to make sure no two URLs are mapped to the same file -> cannot happen by logic of volumemapper
-		//and no two files are mapped to the same url
-		
+				
 		logger.info("*** Mapped the following files to the same URL");
 		for(File fileA : mapState.getMappedFiles()) {
 			Set<File> files = new HashSet<File>();
@@ -92,10 +64,7 @@ public class MapStateReporter {
 			if(files.size() > 1) {
 				logger.info(files + " -> " + mapState.getUrl(fileA));
 			}
-		}
-		
-		
-		
+		}		
 		
 		logger.info("*** Did not map the following " + getUnmappedFiles(mapState).size() + " files: ");
 		for(File file : getUnmappedFiles(mapState)) {
@@ -122,40 +91,6 @@ public class MapStateReporter {
 			}
 		}
 	}
-	private List<File> getAcceptedNameMappedFiles(CrawlState crawlState, MapState mapState) throws JDOMException, IOException {
-		List<File> result = new ArrayList<File>();
-		for(File file : mapState.getMappedFiles()) {
-			String url = mapState.getUrl(file);
-			String linkName = crawlState.getLinkName(url);
-			if(acceptedNameExtractor.extract(file).contains(linkName)) 
-				result.add(file);
-		}
-		return result;
-	}
-
-	private List<File> getSynonymMappedFiles(CrawlState crawlState, MapState mapState) throws JDOMException, IOException {
-		List<File> result = new ArrayList<File>();
-		for(File file : mapState.getMappedFiles()) {
-			String url = mapState.getUrl(file);
-			String linkName = crawlState.getLinkName(url);
-			if(anyNameExtractor.extract(file).contains(linkName) && 
-					!acceptedNameExtractor.extract(file).contains(linkName))
-				result.add(file);
-		}
-		return result;
-	}
-
-	private List<File> getFileNameMappedFiles(CrawlState crawlState, MapState mapState) throws Exception {
-		List<File> result = new ArrayList<File>();
-		for(File file : mapState.getMappedFiles()) {
-			String url = mapState.getUrl(file);
-			String linkName = crawlState.getLinkName(url);
-			if(fileNameExtractor.extract(file).contains(linkName))
-				result.add(file);
-		}
-		return result;
-	}
-
 	private String getUrlInfo(CrawlState crawlState, String url) {
 		return crawlState.getLinkName(url) + " (" + crawlState.getLinkText(url) + ") - " + url;
 	}
