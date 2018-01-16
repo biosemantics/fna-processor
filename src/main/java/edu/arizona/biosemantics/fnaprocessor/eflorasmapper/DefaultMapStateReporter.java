@@ -88,7 +88,8 @@ public class DefaultMapStateReporter implements MapStateReporter {
 			String name = crawlState.getLinkName(url);
 			//a single (not-yet mapped) taxon treatment page
 			if(name != null) {
-				unmappedUrls.add(url);
+				if(!mapState.hasFile(url))
+					unmappedUrls.add(url);
 			}
 		}
 		logger.info("*** Did not find a file for the following " + unmappedUrls.size() + " crawled urls");

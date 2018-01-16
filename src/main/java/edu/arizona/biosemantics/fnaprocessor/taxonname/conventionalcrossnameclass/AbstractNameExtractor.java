@@ -1,11 +1,10 @@
-package edu.arizona.biosemantics.fnaprocessor.taxonname.conventional;
+package edu.arizona.biosemantics.fnaprocessor.taxonname.conventionalcrossnameclass;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -15,11 +14,9 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.jdom2.Document;
-import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
 
-import edu.arizona.biosemantics.common.taxonomy.Rank;
 import edu.arizona.biosemantics.fnaprocessor.taxonname.TaxonNameExtractor;
 
 /**
@@ -31,19 +28,11 @@ public abstract class AbstractNameExtractor implements TaxonNameExtractor {
 	private static Logger logger = Logger.getLogger(AbstractNameExtractor.class);
 	private Map<File, Set<String>> nameExtractionCache = new HashMap<File, Set<String>>();
 
-	protected Comparator<Element> rankComparator = new Comparator<Element>() {
-		@Override
-		public int compare(Element o1, Element o2) {
-			return Rank.valueOf(o1.getAttribute("rank").getValue().trim().toUpperCase()).getId() - 
-					Rank.valueOf(o2.getAttribute("rank").getValue().trim().toUpperCase()).getId();
-		}	
-	};
-	
 	public static void main(String[] args) throws JDOMException, IOException {
 		AcceptedNameExtractor extr = new AcceptedNameExtractor();
 		
 		//logger.info(extr.extract(new File("C:\\Users\\updates\\git\\FNATextProcessing\\V2\\Abies amabilis.xml")).size());
-		logger.info(extr.extract(new File("C:\\Users\\rodenhausen.CATNET\\git2018\\FNATextProcessing\\V5\\99.xml")));
+		logger.info(extr.extract(new File("C:\\Users\\updates\\git\\FNATextProcessing\\V19-20-21\\v20-1123.xml")));
 	}
 	
 	@Override
@@ -54,56 +43,51 @@ public abstract class AbstractNameExtractor implements TaxonNameExtractor {
 		SAXBuilder builder = new SAXBuilder();
 		Document document = (Document) builder.build(file);
 		
-		
-
-		List<LinkedHashMap<String, Set<String>>> nameOptions = createNameOptions(document);
-		for(LinkedHashMap<String, Set<String>> rankNameOptions : nameOptions) {
-			for(int nameLength = 1; nameLength <= rankNameOptions.size(); nameLength++) {
-				String[] ranks = new String[rankNameOptions.size()];
-				ranks = rankNameOptions.keySet().toArray(ranks);
+		LinkedHashMap<String, Set<String>> rankNameOptions = createRankNameOptions(document);
+		for(int nameLength = 1; nameLength <= rankNameOptions.size(); nameLength++) {
+			String[] ranks = new String[rankNameOptions.size()];
+			ranks = rankNameOptions.keySet().toArray(ranks);
+			
+			Map<String, Boolean> enabledNames = new HashMap<String, Boolean>();
+			for(int i = 0; i < rankNameOptions.size(); i++) {
+				String rank = ranks[i];
+				enabledNames.put(rank, i >= ranks.length - nameLength);
+			}
+			
+			//enable or disable rank abbreviations all possible combinations
+			double maxP = Math.pow(2, nameLength);
+			for(int p = 0; p < maxP; p++) {
+				String enabledAbbreviationParameters = String.format("%" + rankNameOptions.size() + "s", Integer.toBinaryString(p)).replace(' ', '0');
 				
-				Map<String, Boolean> enabledNames = new HashMap<String, Boolean>();
+				LinkedHashMap<String, Boolean> enabledAbbreviations = new LinkedHashMap<String, Boolean>();
 				for(int i = 0; i < rankNameOptions.size(); i++) {
 					String rank = ranks[i];
-					enabledNames.put(rank, i >= ranks.length - nameLength);
+					enabledAbbreviations.put(rank, enabledAbbreviationParameters.charAt(i) == '1');
 				}
-				
-				//enable or disable rank abbreviations all possible combinations
-				double maxP = Math.pow(2, nameLength);
-				for(int p = 0; p < maxP; p++) {
-					String enabledAbbreviationParameters = String.format("%" + rankNameOptions.size() + "s", Integer.toBinaryString(p)).replace(' ', '0');
-					
-					LinkedHashMap<String, Boolean> enabledAbbreviations = new LinkedHashMap<String, Boolean>();
-					for(int i = 0; i < rankNameOptions.size(); i++) {
-						String rank = ranks[i];
-						enabledAbbreviations.put(rank, enabledAbbreviationParameters.charAt(i) == '1');
-					}
-					
-					result.addAll(this.getNameVariants(rankNameOptions, 
-							enabledNames, enabledAbbreviations));
-				}
-			}	
-			
-			/**
-			 * Make sure to include the binomial name in either case
-			 */
-			result.addAll(this.getConsecutiveNameForRanks(rankNameOptions, "genus", "species"));
-			
-			/**
-			 * Make sure to include the binomial + variety name in either case
-			 */
-			result.addAll(this.getConsecutiveNameForRanks(rankNameOptions, "genus", "species", "variety"));
-			
-			/**
-			 * Make sure to include binomial + subspecies name in either case
-			 */
-			result.addAll(this.getConsecutiveNameForRanks(rankNameOptions, "genus", "species", "subspecies"));
+				result.addAll(this.getNameVariants(rankNameOptions, 
+						enabledNames, enabledAbbreviations));
+			}
 		}
+		
+		/**
+		 * Make sure to include the binomial name in either case
+		 */
+		result.addAll(this.getConsecutiveNameForRanks(rankNameOptions, "genus", "species"));
+		
+		/**
+		 * Make sure to include the binomial + variety name in either case
+		 */
+		result.addAll(this.getConsecutiveNameForRanks(rankNameOptions, "genus", "species", "variety"));
+		
+		/**
+		 * Make sure to include binomial + subspecies name in either case
+		 */
+		result.addAll(this.getConsecutiveNameForRanks(rankNameOptions, "genus", "species", "subspecies"));
 		
 		nameExtractionCache.put(file, result);
 		return result;
 	}
-
+	
 	private Collection<? extends String> getConsecutiveNameForRanks(LinkedHashMap<String, Set<String>> rankNameOptions,
 			String... ranks) {
 		LinkedHashMap<String, Set<String>> rankNameOptionsBinomial = new LinkedHashMap<String, Set<String>>();
@@ -185,7 +169,7 @@ public abstract class AbstractNameExtractor implements TaxonNameExtractor {
 		return "";
 	}
 
-	protected abstract List<LinkedHashMap<String, Set<String>>> createNameOptions(Document document);
+	protected abstract LinkedHashMap<String, Set<String>> createRankNameOptions(Document document);
 	
 	protected String normalizeTaxonName(String value) {
 		return value.trim().replaceAll("[^a-zA-Z_0-9.<>\\s]", "").replaceAll("\\s+", " ").toLowerCase();

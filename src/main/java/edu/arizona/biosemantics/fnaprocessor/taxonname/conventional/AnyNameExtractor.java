@@ -2,7 +2,6 @@ package edu.arizona.biosemantics.fnaprocessor.taxonname.conventional;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -14,40 +13,39 @@ import org.jdom2.filter.Filters;
 import org.jdom2.xpath.XPathExpression;
 import org.jdom2.xpath.XPathFactory;
 
-import edu.arizona.biosemantics.common.taxonomy.Rank;
-
 public class AnyNameExtractor extends AbstractNameExtractor {
-
-	protected LinkedHashMap<String, Set<String>> createRankNameOptions(Document document) {
+	
+	protected List<LinkedHashMap<String, Set<String>>> createNameOptions(Document document) {
+		List<LinkedHashMap<String, Set<String>>> list = new ArrayList<>();
 		XPathFactory xFactory = XPathFactory.instance();
 		XPathExpression<Element> acceptedNameExpression =
-				xFactory.compile("//taxon_identification[@status='ACCEPTED']/taxon_name", Filters.element());
+				xFactory.compile("//taxon_identification[@status='ACCEPTED']", Filters.element());
 		XPathExpression<Element> synonymNameExpression = 
-				xFactory.compile("//taxon_identification[@status='SYNONYM']/taxon_name | "
-						+ "//taxon_identification[@status='BASONYM']/taxon_name", Filters.element());
+				xFactory.compile("//taxon_identification[@status='SYNONYM']", Filters.element());
+		XPathExpression<Element> basionymNameExpression = 
+				xFactory.compile("//taxon_identification[@status='BASONYM']", Filters.element());
 		
 		List<Element> acceptedNameElements = new ArrayList<Element>(acceptedNameExpression.evaluate(document));
 		List<Element> synonymNameElements = new ArrayList<Element>(synonymNameExpression.evaluate(document));
-		Comparator<Element> rankComparator = new Comparator<Element>() {
-			@Override
-			public int compare(Element o1, Element o2) {
-				return Rank.valueOf(o1.getAttribute("rank").getValue().trim().toUpperCase()).getId() - 
-						Rank.valueOf(o2.getAttribute("rank").getValue().trim().toUpperCase()).getId();
-			}	
-		};
-		acceptedNameElements.sort(rankComparator);
-		synonymNameElements.sort(rankComparator);
-		LinkedHashMap<String, Set<String>> rankNameOptions = new LinkedHashMap<String, Set<String>>();
-		for(Element acceptedNameElement : acceptedNameElements) {
-			String rank = normalizeTaxonName(acceptedNameElement.getAttributeValue("rank"));
-			rankNameOptions.put(rank, new HashSet<String>(Arrays.asList(normalizeTaxonName(acceptedNameElement.getValue()))));
+		List<Element> basionymNameElements = new ArrayList<Element>(basionymNameExpression.evaluate(document));
+		
+		this.addNameOptions(acceptedNameElements, list);
+		this.addNameOptions(synonymNameElements, list);
+		this.addNameOptions(basionymNameElements, list);
+		return list;
+	}
+
+	private void addNameOptions(List<Element> nameElements, List<LinkedHashMap<String, Set<String>>> result) {
+		for(Element nameElement : nameElements) {
+			List<Element> rankElements = new ArrayList<Element>(nameElement.getChildren("taxon_name"));
+			rankElements.sort(rankComparator);
+			
+			LinkedHashMap<String, Set<String>> rankNameOptions = new LinkedHashMap<String, Set<String>>();
+			for(Element rankElement : rankElements) {
+				String rank = normalizeTaxonName(rankElement.getAttributeValue("rank"));
+				rankNameOptions.put(rank, new HashSet<String>(Arrays.asList(normalizeTaxonName(rankElement.getValue()))));
+			}
+			result.add(rankNameOptions);
 		}
-		for(Element synonymNameElement : synonymNameElements) {
-			String rank = normalizeTaxonName(synonymNameElement.getAttributeValue("rank"));
-			if(!rankNameOptions.containsKey(rank))
-				rankNameOptions.put(rank, new HashSet<String>());
-			rankNameOptions.get(rank).add(normalizeTaxonName(synonymNameElement.getValue()));
-		}
-		return rankNameOptions;
 	}
 }
