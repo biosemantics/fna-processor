@@ -2,7 +2,6 @@ package edu.arizona.biosemantics.fnaprocessor.eflorasmapper.combine;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.List;
 
 import org.apache.log4j.Logger;
 

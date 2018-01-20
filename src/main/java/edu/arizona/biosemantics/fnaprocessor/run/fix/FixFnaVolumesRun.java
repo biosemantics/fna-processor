@@ -11,11 +11,7 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
 import edu.arizona.biosemantics.fnaprocessor.action.VolumeAction;
-import edu.arizona.biosemantics.fnaprocessor.action.distributionmap.DistributionMapAction;
-import edu.arizona.biosemantics.fnaprocessor.action.duplicate.FindDuplicateAction;
 import edu.arizona.biosemantics.fnaprocessor.action.key.KeyAction;
-import edu.arizona.biosemantics.fnaprocessor.action.printlocation.PrintLocationAction;
-import edu.arizona.biosemantics.fnaprocessor.action.taxonname.TaxonNameValidationAction;
 import edu.arizona.biosemantics.fnaprocessor.run.Run;
 
 public class FixFnaVolumesRun implements Run {
@@ -28,18 +24,19 @@ public class FixFnaVolumesRun implements Run {
 	public FixFnaVolumesRun(
 			@Named("volumesDir") File volumesDir,
 			@Named("volumeDirUrlMap") Map<File, String> volumeDirUrlMap,
-			FindDuplicateAction findDuplicateAction,
-			TaxonNameValidationAction taxonNameValidationAction,
-			//KeyAction keyAction,
-			DistributionMapAction distributionMapAction,
-			PrintLocationAction printLocationAction) {
+			//FindDuplicateAction findDuplicateAction,
+			//TaxonNameValidationAction taxonNameValidationAction,
+			KeyAction keyAction
+			//DistributionMapAction distributionMapAction,
+			//PrintLocationAction printLocationAction
+			) {
 		this.volumesDir = volumesDir;
 		VolumeAction[] a = { 
 				//findDuplicateAction, 
 				//taxonNameValidationAction, 
 				//printLocationAction, 
-				distributionMapAction,
-				//keyAction 
+				//distributionMapAction,
+				keyAction 
 				};
 		this.volumeDirUrlMap = volumeDirUrlMap;
 		this.actions = new ArrayList<VolumeAction>(Arrays.asList(a));

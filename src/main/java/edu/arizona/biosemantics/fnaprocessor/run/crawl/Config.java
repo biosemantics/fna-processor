@@ -8,8 +8,6 @@ import com.google.inject.TypeLiteral;
 import com.google.inject.name.Names;
 
 import edu.arizona.biosemantics.fnaprocessor.Configuration;
-import edu.arizona.biosemantics.fnaprocessor.eflorascrawler.CrawlStateStorer;
-import edu.arizona.biosemantics.fnaprocessor.eflorascrawler.SerializedCrawlStateStorer;
 import edu.arizona.biosemantics.fnaprocessor.run.BaseConfig;
 
 public class Config extends BaseConfig {

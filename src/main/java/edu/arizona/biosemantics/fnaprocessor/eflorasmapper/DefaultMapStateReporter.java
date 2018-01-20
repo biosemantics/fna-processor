@@ -2,7 +2,6 @@ package edu.arizona.biosemantics.fnaprocessor.eflorasmapper;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -10,7 +9,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.jdom2.JDOMException;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;

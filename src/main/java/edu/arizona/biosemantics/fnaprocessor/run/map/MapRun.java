@@ -12,8 +12,6 @@ import edu.arizona.biosemantics.fnaprocessor.eflorasmapper.DefaultMapStateReport
 import edu.arizona.biosemantics.fnaprocessor.eflorasmapper.MapState;
 import edu.arizona.biosemantics.fnaprocessor.eflorasmapper.MapStateProvider;
 import edu.arizona.biosemantics.fnaprocessor.eflorasmapper.MapStateStorer;
-import edu.arizona.biosemantics.fnaprocessor.eflorasmapper.name.NameBasedMapStateReporter;
-import edu.arizona.biosemantics.fnaprocessor.eflorasmapper.number.NumberBasedVolumeMapper;
 import edu.arizona.biosemantics.fnaprocessor.run.Run;
 
 public class MapRun implements Run {

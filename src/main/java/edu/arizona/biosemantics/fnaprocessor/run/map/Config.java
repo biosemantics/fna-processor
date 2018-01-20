@@ -1,27 +1,20 @@
 package edu.arizona.biosemantics.fnaprocessor.run.map;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 import com.google.inject.TypeLiteral;
 import com.google.inject.name.Names;
 
 import edu.arizona.biosemantics.fnaprocessor.Configuration;
-import edu.arizona.biosemantics.fnaprocessor.eflorascrawler.CrawlStateProvider;
-import edu.arizona.biosemantics.fnaprocessor.eflorascrawler.SerializedCrawlStateProvider;
 import edu.arizona.biosemantics.fnaprocessor.eflorasmapper.DefaultMapStateReporter;
 import edu.arizona.biosemantics.fnaprocessor.eflorasmapper.MapStateProvider;
 import edu.arizona.biosemantics.fnaprocessor.eflorasmapper.MapStateReporter;
-import edu.arizona.biosemantics.fnaprocessor.eflorasmapper.MapStateStorer;
-import edu.arizona.biosemantics.fnaprocessor.eflorasmapper.SerializedMapStateStorer;
 import edu.arizona.biosemantics.fnaprocessor.eflorasmapper.combine.StackVolumeMapper;
-import edu.arizona.biosemantics.fnaprocessor.eflorasmapper.number.NumberBasedVolumeMapper;
 import edu.arizona.biosemantics.fnaprocessor.run.BaseConfig;
 import edu.arizona.biosemantics.fnaprocessor.taxonname.CollectiveNameExtractor;
 import edu.arizona.biosemantics.fnaprocessor.taxonname.FileNameExtractor;
@@ -40,8 +33,7 @@ public class Config extends BaseConfig {
 		Map<String, File> volumeUrlDirMap = new LinkedHashMap<String, File>();
 		
 		int[] volumes = new int[] {
-			5
-				//2,3,4,5,6,7,8,9,19,22,23,26,27,28
+			2,3,4,5,6,7,8,9,19,22,23,26,27,28
 			//2,3,4,5,6,8,9,
 			//7 is slow
 			//19, //this one is slow as it contains 19,20,21: Don't use synonym name matching for this as slow too many synonyms

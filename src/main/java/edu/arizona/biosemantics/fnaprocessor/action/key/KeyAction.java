@@ -1,201 +1,215 @@
 package edu.arizona.biosemantics.fnaprocessor.action.key;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileFilter;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.jdom2.JDOMException;
+import org.jdom2.input.SAXBuilder;
+import org.jdom2.output.Format;
+import org.jdom2.output.XMLOutputter;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.nodes.Node;
-import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
 import edu.arizona.biosemantics.fnaprocessor.action.VolumeAction;
-import edu.uci.ics.jung.graph.DirectedSparseGraph;
+import edu.arizona.biosemantics.fnaprocessor.eflorascrawler.CrawlState;
+import edu.arizona.biosemantics.fnaprocessor.eflorascrawler.CrawlStateProvider;
+import edu.arizona.biosemantics.fnaprocessor.eflorascrawler.HrefResolver;
+import edu.arizona.biosemantics.fnaprocessor.eflorasmapper.MapState;
+import edu.arizona.biosemantics.fnaprocessor.eflorasmapper.MapStateProvider;
 
 public class KeyAction implements VolumeAction {
-	
-	private static Logger logger = Logger.getLogger(KeyAction.class);
-	
-	private Map<String, Document> documentCache = new HashMap<String, Document>();
-	private Map<String, TaxonConcept> taxonConceptUrlMap = new HashMap<String, TaxonConcept>();
-	private Map<TaxonConcept, String> taxonConceptReverseUrlMap = new HashMap<TaxonConcept, String>();
-	private Map<File, String> volumeDirUrlMap = new HashMap<File, String>();
 
-	private String baseUrl;
+	private final static Logger logger = Logger.getLogger(KeyAction.class);
+	
+	private MapStateProvider mapStateProvider;
+	private CrawlStateProvider crawlStateProvider;
+	private Map<File, String> volumeDirUrlMap;
+
+	private HrefResolver hrefResolver;
 
 	@Inject
-	public KeyAction(String baseUrl, 
-			@Named("volumeDirUrlMap")Map<File, String> volumeDirUrlMap) {
-		this.baseUrl = baseUrl;
+	public KeyAction(CrawlStateProvider crawlStateProvider, HrefResolver hrefResolver,
+			@Named("serializedMapStateProvider") MapStateProvider mapStateProvider,
+			@Named("volumeDirUrlMap") Map<File, String> volumeDirUrlMap) {
+		this.mapStateProvider = mapStateProvider;
+		this.hrefResolver = hrefResolver;
+		this.crawlStateProvider = crawlStateProvider;
 		this.volumeDirUrlMap = volumeDirUrlMap;
 	}
 	
 	@Override
 	public void run(File volumeDir) throws Exception {
-		logger.info("Running KeyAction for " + volumeDir);
+		logger.info("Running KeyAction2 for " + volumeDir);
+		MapState mapState = mapStateProvider.getMapState(volumeDir, new MapState(volumeDirUrlMap.get(volumeDir)));
+		CrawlState crawlState = crawlStateProvider.getCrawlState(volumeDirUrlMap.get(volumeDir));
 		
-		if(volumeDirUrlMap.containsKey(volumeDir)) {
-			Document doc = this.getDocument(volumeDirUrlMap.get(volumeDir));
-			Element tbody = doc.selectFirst("#ucFloraTaxonList_panelTaxonList");
-			
-			//for each family
-			for(Element a : tbody.select("[title=\"Accepted Name\"]")) {
-				String href = a.attr("href");
+		for(File file : volumeDir.listFiles(new FileFilter() {
+			@Override
+			public boolean accept(File file) {
+				return file.isFile() && file.getName().endsWith(".xml");
+			}
+		})) {
+			if(mapState.hasUrl(file)) {
+				String url = mapState.getUrl(file);
+				Document efloraDocument = crawlState.getUrlDocumentMapping(url);
 				
-				DirectedSparseGraph<KeyNode, String> keyGraph = new DirectedSparseGraph<KeyNode, String>();
-				this.appendKey(baseUrl + href, keyGraph);
-			}
-		} else {
-			logger.warn("No url found for " + volumeDir);
-		}
-	}
-	
-	public Document getDocument(String url) throws IOException {
-		if(documentCache.containsKey(url)) 
-			return documentCache.get(url);
-		return Jsoup.connect(url).get();
-	}
-	
-	private KeyNode getKeyNode(String url) throws IOException {
-		Document taxonDoc = this.getDocument(url);
-		List<TaxonConcept> lowerTaxonConcepts = new ArrayList<TaxonConcept>();
-		TaxonConcept taxonConcept = getTaxonName(taxonDoc);
-		this.addTaxonConceptUrl(url, taxonConcept);
-		for(Element a : taxonDoc.select("[title=\"Accepted Name\"]")) {
-			String lowerTaxonName = a.child(0).text();
-			String lowerTaxonAuthor = a.ownText();
-			String lowerTaxonUrl = a.attr("href");
-			TaxonConcept lowerTaxonConcept = new TaxonConcept(lowerTaxonName, lowerTaxonAuthor);
-			this.addTaxonConceptUrl(baseUrl + lowerTaxonUrl, lowerTaxonConcept);
-			lowerTaxonConcepts.add(lowerTaxonConcept);
-		}
-		KeyNode keyNode = new KeyNode(taxonConcept, lowerTaxonConcepts);
-		return keyNode;
-	}
-	
-	private void addTaxonConceptUrl(String url, TaxonConcept taxonConcept) {
-		taxonConceptUrlMap.put(url, taxonConcept);
-		this.taxonConceptReverseUrlMap.put(taxonConcept, url);
-	}
 
-	private KeyNode appendKey(String url, DirectedSparseGraph<KeyNode, String> keyGraph) throws IOException {
-		KeyNode keyNode = this.getKeyNode(url);
-		logger.info("append key: " + keyNode.getTaxonName().getName() + " " + url);
-		
-		Map<String, KeyNode> targetsKeyNodeMap = new HashMap<String, KeyNode>();
-		for(TaxonConcept lowerTaxonConcept : keyNode.getLowerTaxonConcepts()) {
-			String lowerTaxonConceptUrl = this.taxonConceptReverseUrlMap.get(lowerTaxonConcept);
-			KeyNode lowerKeyNode = this.appendKey(lowerTaxonConceptUrl, keyGraph);
-			targetsKeyNodeMap.put(lowerTaxonConceptUrl, lowerKeyNode);
-		}
-		keyGraph.addVertex(keyNode);
-		
-		
-		Elements rowElements = this.getDocument(url).select("#tableKey > tbody > tr > td > table > tbody > tr");	
-		if(rowElements.isEmpty()) {
-			for(KeyNode targetKeyNode : targetsKeyNodeMap.values()) {
-				String edge = keyNode.getTaxonName().toString() + "_direct_" + targetKeyNode.getTaxonName().toString();
-				keyGraph.addEdge(edge, keyNode, targetKeyNode);
-			}
-		} else {
-			List<Element> cleanedRowElements = new ArrayList<Element>();
-			for(Element rowElement : rowElements)
-				if(rowElement.child(0).text().trim().isEmpty() &&
-						rowElement.child(1).text().trim().isEmpty() &&
-						rowElement.child(2).text().trim().isEmpty() &&	
-						rowElement.child(3).text().trim().isEmpty())
-					continue;
+				List<org.jdom2.Element> keyElements = createKeyElements(url, efloraDocument);
+				if(!keyElements.isEmpty()) 
+					removeKeyElement(file);
 				else
-					cleanedRowElements.add(rowElement);
-			
-			Map<String, List<Element>> indexedKeyRows = new HashMap<String, List<Element>>();
-			String lastIndex = "";
-			for(Element keyRow : cleanedRowElements) {
-				String index = lastIndex;
-				if(keyRow.child(0).children().size() > 0) {
-					index = keyRow.child(0).child(0).attr("name").trim();
-					lastIndex = index;
-				}
+					logger.warn("Did not find lblKey element for file/url" + file + " (" + url + ")");
 				
-				if(!indexedKeyRows.containsKey(index)) {
-					indexedKeyRows.put(index, new ArrayList<Element>());
-				
-					KeyNode intermediaryNode = new KeyNode(new TaxonConcept(url + index, ""), new ArrayList<TaxonConcept>());
-					targetsKeyNodeMap.put(url + index, intermediaryNode);
-					keyGraph.addVertex(intermediaryNode);
+				for(org.jdom2.Element keyElement : keyElements) {
+					addKeyElement(file, keyElement);
 				}
-				indexedKeyRows.get(index).add(keyRow);
+			} else {
+				logger.error("Missing file to document mapping for file " + file);
 			}
-			
-			for(Element keyRow : cleanedRowElements) {
-				String edge = keyRow.child(1).text().trim();
-				
-				Element aCandidate = keyRow.child(3).selectFirst("a"); //keyRow.child(3).child(0); //there are some keys where there is more nesting with a <p> etc.
-				//if(aCandiate.)
-				//if(keyRow.hasAttr("href"))
-				String targetUrl = aCandidate.attr("href");//keyRow.child(3).child(0).tagName().equals("a") &&.hasAttr("href").attr("href");
-				//if(target)
-				System.out.println(targetUrl);
-				if(targetUrl.equals("#KEY-1-6") || targetUrl.isEmpty()) {
-					System.out.println();
-				}
-				if(targetUrl.startsWith("#"))
-					targetUrl = url + targetUrl.replace("#", "");
-				else
-					targetUrl = baseUrl + targetUrl;
-				KeyNode targetKeyNode = targetsKeyNodeMap.get(targetUrl);
-				if(targetKeyNode == null) {
-					targetKeyNode = this.getKeyNode(targetUrl);
-					targetsKeyNodeMap.put(targetUrl, targetKeyNode);
-				}
-					
-				keyGraph.addEdge(edge, keyNode, targetKeyNode);
+		}
+	}
+
+	private List<org.jdom2.Element> createKeyElements(String url, Document efloraDocument) throws IOException {
+		List<org.jdom2.Element> result = new ArrayList<org.jdom2.Element>();
+		org.jdom2.Element key = createKeyElement(efloraDocument);
+		if(key != null)
+			result.add(key);
+		
+		Element keyListElement = efloraDocument.selectFirst("#lblKeyList");
+		if(keyListElement != null) {
+			for(Element keyHref : keyListElement.select("ul > li > a")) {
+				Document alternativeKeyDoc = Jsoup.connect(hrefResolver.getBaseUrl(url) + "/" + keyHref.attr("href")).get();
+				org.jdom2.Element altKey = createKeyElement(alternativeKeyDoc);
+				result.add(altKey);
 			}
+		}
+		return result;
+	}
+
+	private void removeKeyElement(File file) {
+		SAXBuilder saxBuilder = new SAXBuilder();
+		org.jdom2.Document document;
+		try {
+			document = saxBuilder.build(file);
+		} catch (JDOMException | IOException e) {
+			logger.error("SAXBuilder cannot build "+(file.getName())+ ".");
+			return;
+		}
+		document.getRootElement().removeChildren("key");
+		writeToFile(document, file);
+	}
+
+	private void writeToFile(org.jdom2.Document document, File file) {
+		try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8))) {
+			XMLOutputter outputter = new XMLOutputter();
+			outputter.setFormat(Format.getPrettyFormat());
+			outputter.output(document, bw);
+		} catch (IOException e) {
+			logger.warn("IO Error writing update XML to file", e);
+		}
+	}
+
+	private void addKeyElement(File file, org.jdom2.Element newKeyElement) {
+		SAXBuilder saxBuilder = new SAXBuilder();
+		org.jdom2.Document document;
+		try {
+			document = saxBuilder.build(file);
+		} catch (JDOMException | IOException e) {
+			logger.error("SAXBuilder cannot build "+(file.getName())+ ".");
+			return;
+		}
+		document.getRootElement().addContent(newKeyElement);
+		writeToFile(document, file);
+	}
+
+	private static org.jdom2.Element createKeyElement(Document doc) throws IOException {
+		//System.out.println(doc.toString());
+		org.jdom2.Element result = new org.jdom2.Element("key");
+		Element tableKeyElement = doc.selectFirst("#tableKey");
+		if(tableKeyElement == null)
+			return null;
+		Element tableKeyTitleElement = doc.selectFirst("#lblKeyTitle");
+		if(tableKeyTitleElement != null) {
+			String title = tableKeyTitleElement.text();
+			org.jdom2.Element keyHead = new org.jdom2.Element("key_head");
+			keyHead.setText(title);
+			result.addContent(keyHead);
 		}
 		
-		return keyNode;
-	}
-
-	private TaxonConcept getTaxonName(Document taxonDoc) {
-		Element taxonDescrSpan = taxonDoc.selectFirst("#lblTaxonDesc");		
-
-		String name = "";
-		String author = "";
-
-		boolean passedFirstBElement = false;		
-		for(Node node : taxonDescrSpan.childNodes()) {
-			if(passedFirstBElement) {
-				if(node instanceof TextNode) 
-					author = ((TextNode)node).text().trim();
-				break;
-			}
-			if(node instanceof Element) {
-				Element element = (Element)node;
-				if(element.tagName().equals("b")) {
-					name = element.text().trim();
-					passedFirstBElement = true;
+		Element tableKeyContentElement = tableKeyElement.select("tbody > tr").get(1);
+		
+		String statementId = "";
+		for(Element trElement : tableKeyContentElement.select("td > table > tbody > tr")) {
+			Elements tdElements = trElement.select("td");
+			if(!tdElements.isEmpty() && !tdElements.get(0).text().isEmpty()) {
+				Element aElement = tdElements.get(0).selectFirst("a");
+				if(aElement != null) {
+					String aText = aElement.text();
+					if(!aText.trim().equals("+"))
+						statementId = aText;
+					result.addContent(createKeyStatement(statementId, trElement));	
+				} else {
+					result.addContent(createKeyStatement(statementId, trElement));	
 				}
 			}
 		}
-		return new TaxonConcept(name, author);
+		return result;
+	}
+	
+	private static org.jdom2.Element createKeyStatement(String statementId, Element trElement) throws IOException {
+		
+		Elements tdElements = trElement.select("td");
+		org.jdom2.Element result = new org.jdom2.Element("key_statement");
+		org.jdom2.Element statementIdEl = new org.jdom2.Element("statement_id");
+		statementIdEl.setText(statementId);
+		org.jdom2.Element description = new org.jdom2.Element("description");
+		description.setAttribute("type", "morphology");
+		description.setText(tdElements.get(1).text());
+
+		result.addContent(statementIdEl);
+		result.addContent(description);
+		
+		String lastTdText = tdElements.get(3).text().trim();
+		if(lastTdText.startsWith("(") && lastTdText.endsWith(")") && lastTdText.length() > 2) {
+			org.jdom2.Element nextStatement = new org.jdom2.Element("next_statement");
+			nextStatement.setText(lastTdText.substring(1, lastTdText.length() - 1));
+			result.addContent(nextStatement);
+		} else {
+			org.jdom2.Element determination = new org.jdom2.Element("determination");
+			determination.setText(lastTdText);
+			result.addContent(determination);
+		}
+		
+		
+		/*XMLOutputter outputter = new XMLOutputter();
+		outputter.setFormat(Format.getPrettyFormat());
+		outputter.output(result, System.out);*/
+		
+		return result;
 	}
 
-	public static void main(String[] args) throws Exception {
-		String baseUrl = "http://www.efloras.org/";
-		File volumeDir = new File("C:\\Users\\updates\\git\\FNATextProcessing\\V9");
-		Map<File, String> volumeUrlMap = new HashMap<File, String>();
-		volumeUrlMap.put(volumeDir, "http://www.efloras.org/volume_page.aspx?volume_id=1009&flora_id=1");
-		KeyAction key = new KeyAction(baseUrl, volumeUrlMap);
-		key.run(volumeDir);
+	public static void main(String[] args) throws IOException {
+		Document doc = Jsoup.connect("http://www.efloras.org/florataxon.aspx?flora_id=1&taxon_id=10074").get();
+		org.jdom2.Element result = KeyAction.createKeyElement(doc);
+		
+		
+		XMLOutputter outputter = new XMLOutputter();
+		outputter.setFormat(Format.getPrettyFormat());
+		outputter.output(result, System.out);
 	}
 
 }
