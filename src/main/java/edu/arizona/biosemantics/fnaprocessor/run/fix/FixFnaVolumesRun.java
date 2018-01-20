@@ -12,6 +12,7 @@ import com.google.inject.name.Named;
 
 import edu.arizona.biosemantics.fnaprocessor.action.VolumeAction;
 import edu.arizona.biosemantics.fnaprocessor.action.key.KeyAction;
+import edu.arizona.biosemantics.fnaprocessor.action.parenthesis.ParenthesisAction;
 import edu.arizona.biosemantics.fnaprocessor.run.Run;
 
 public class FixFnaVolumesRun implements Run {
@@ -26,9 +27,10 @@ public class FixFnaVolumesRun implements Run {
 			@Named("volumeDirUrlMap") Map<File, String> volumeDirUrlMap,
 			//FindDuplicateAction findDuplicateAction,
 			//TaxonNameValidationAction taxonNameValidationAction,
-			KeyAction keyAction
+			//KeyAction keyAction
 			//DistributionMapAction distributionMapAction,
 			//PrintLocationAction printLocationAction
+			ParenthesisAction parenthesisAction
 			) {
 		this.volumesDir = volumesDir;
 		VolumeAction[] a = { 
@@ -36,7 +38,8 @@ public class FixFnaVolumesRun implements Run {
 				//taxonNameValidationAction, 
 				//printLocationAction, 
 				//distributionMapAction,
-				keyAction 
+				//keyAction 
+				parenthesisAction
 				};
 		this.volumeDirUrlMap = volumeDirUrlMap;
 		this.actions = new ArrayList<VolumeAction>(Arrays.asList(a));
