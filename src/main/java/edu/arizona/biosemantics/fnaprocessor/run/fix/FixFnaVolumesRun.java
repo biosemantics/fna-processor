@@ -13,8 +13,8 @@ import com.google.inject.name.Named;
 import edu.arizona.biosemantics.fnaprocessor.action.VolumeAction;
 import edu.arizona.biosemantics.fnaprocessor.action.key.KeyAction;
 import edu.arizona.biosemantics.fnaprocessor.action.parenthesis.ParenthesisAction;
-import edu.arizona.biosemantics.fnaprocessor.action.schema.ConvertOldSchemaAction;
 import edu.arizona.biosemantics.fnaprocessor.action.schemacheck.SchemaCheckAction;
+import edu.arizona.biosemantics.fnaprocessor.action.schemaconvert.ConvertOldSchemaAction;
 import edu.arizona.biosemantics.fnaprocessor.run.Run;
 
 public class FixFnaVolumesRun implements Run {
@@ -33,7 +33,7 @@ public class FixFnaVolumesRun implements Run {
 			//DistributionMapAction distributionMapAction,
 			//PrintLocationAction printLocationAction
 			//ParenthesisAction parenthesisAction
-			//ConvertOldSchemaAction schemaAction
+			ConvertOldSchemaAction schemaAction,
 			SchemaCheckAction schemaCheckAction
 			) {
 		this.volumesDir = volumesDir;
@@ -44,7 +44,7 @@ public class FixFnaVolumesRun implements Run {
 				//distributionMapAction,
 				//keyAction 
 				//parenthesisAction,
-				//schemaAction,
+				schemaAction,
 				schemaCheckAction
 				};
 		this.volumeDirUrlMap = volumeDirUrlMap;

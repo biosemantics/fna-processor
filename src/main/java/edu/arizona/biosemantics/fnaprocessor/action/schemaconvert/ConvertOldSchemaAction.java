@@ -1,4 +1,4 @@
-package edu.arizona.biosemantics.fnaprocessor.action.schema;
+package edu.arizona.biosemantics.fnaprocessor.action.schemaconvert;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -68,26 +68,131 @@ public class ConvertOldSchemaAction implements VolumeAction {
 				document = saxBuilder.build(file);
 				
 				XPathFactory xPathFactory = XPathFactory.instance();
+				
+				XPathExpression<Element> sourceMatcher = 
+						xPathFactory.compile("/bio:treatment/meta/source", Filters.element(), 
+								null, Namespace.getNamespace("bio", "http://www.github.com/biosemantics"));
+				List<Element> sourceElements = new ArrayList<Element>(sourceMatcher.evaluate(document));
+				for(Element sourceElement : sourceElements) {
+					Element authorElement = collapseElements(sourceElement.getChildren("author"), "author");
+					Element titleElement = sourceElement.getChild("title");
+					Element dateElement = sourceElement.getChild("date");
+					Element pagesElement = sourceElement.getChild("pages");
+					
+					sourceElement.removeChildren("author");
+					sourceElement.removeChildren("title");
+					sourceElement.removeChildren("date");
+					sourceElement.removeChildren("pages");
+					if(authorElement != null)
+						sourceElement.addContent(authorElement);
+					if(authorElement.getText().isEmpty())
+						authorElement.setText("NA");
+					if(dateElement == null) {
+						dateElement = new Element("date");
+						dateElement.setText("NA");
+					}
+					sourceElement.addContent(dateElement);
+					if(titleElement != null)
+						sourceElement.addContent(titleElement);
+					if(pagesElement != null)
+						sourceElement.addContent(pagesElement);
+				}
+				
+				
+				
+				
+				XPathExpression<Element> numberMatcher = 
+						xPathFactory.compile("/bio:treatment/number", Filters.element(), 
+								null, Namespace.getNamespace("bio", "http://www.github.com/biosemantics"));
+				List<Element> numberElements = new ArrayList<Element>(numberMatcher.evaluate(document));
+				
 				XPathExpression<Element> taxonNameMatcher = 
 						xPathFactory.compile("/bio:treatment/taxon_identification", Filters.element(), 
 								null, Namespace.getNamespace("bio", "http://www.github.com/biosemantics"));
 				List<Element> taxonIdentificationElements = taxonNameMatcher.evaluate(document);
 				for(Element taxonIdentificationElement : new ArrayList<Element>(taxonIdentificationElements)) {
-					for(Element child : taxonIdentificationElement.getChildren()) {
+					Element taxonNameElement = new Element("taxon_name");
+					for(Element child : new ArrayList<Element>(taxonIdentificationElement.getChildren())) {
 						if(child.getName().equals("rank")) {
-							taxonIdentificationElement.setAttribute("rank", child.getText());
+							String value = "unranked";
+							if(!child.getText().isEmpty())
+								value = child.getText();
+							taxonNameElement.setAttribute("rank", value);
 						} else if(child.getName().equals("name_authority_date")) {
-							taxonIdentificationElement.setText(child.getText());
+							String name = "unknown";
+							if(!child.getText().isEmpty())
+								name = child.getText();
+							taxonNameElement.setText(name);
 							//String[] rankNameAuthoritySplit = getNameAuthority(child.getText(), crawlState);
 							//taxonIdentificationElement.setText(rankNameAuthoritySplit[0]);
 							//taxonIdentificationElement.setAttribute("authority", rankNameAuthoritySplit[1]);
 						} else {
 							logger.warn("Unforseen child type of taxon_identification: " + child.getName() + " in file: " + file.getName());
 						}
-						taxonIdentificationElement.removeContent(taxonIdentificationElement);
+						taxonIdentificationElement.removeContent(child);
 					}
+					taxonNameElement.setAttribute("date", "");
+					taxonNameElement.setAttribute("authority", "");
+					taxonIdentificationElement.addContent(taxonNameElement);
 				}
 				
+				XPathExpression<Element> commonNamesMatcher = 
+						xPathFactory.compile("/bio:treatment/common_names", Filters.element(), 
+								null, Namespace.getNamespace("bio", "http://www.github.com/biosemantics"));
+				List<Element> commonNamesElements = commonNamesMatcher.evaluate(document);
+				for(Element commonNamesElement : new ArrayList<Element>(commonNamesElements)) {
+					Element taxonIdentificationElement = new Element("taxon_identification");
+					taxonIdentificationElement.setAttribute("status", "SYNONYM");
+					Element taxonNameElement = new Element("taxon_name");
+					taxonNameElement.setAttribute("rank", "unranked");
+					taxonNameElement.setAttribute("authority", "");
+					taxonNameElement.setAttribute("date", "");
+					taxonNameElement.setText(commonNamesElement.getText());
+					taxonIdentificationElement.addContent(taxonNameElement);
+					
+					taxonIdentificationElements = taxonNameMatcher.evaluate(document);
+					Element parent = commonNamesElement.getParentElement();
+					commonNamesElement.detach();
+					parent.addContent(
+							parent.indexOf(
+								taxonIdentificationElements.get(taxonIdentificationElements.size() - 1)) + 1,
+							taxonIdentificationElement);
+				}
+				
+				if(!numberElements.isEmpty() && !taxonIdentificationElements.isEmpty()) {
+					Element parent = numberElements.get(0).getParentElement();
+					for(Element numberElement : numberElements) {
+						numberElement.detach();
+						if(numberElement.getText().isEmpty()) 
+							numberElement.setText("NA");
+					}
+					
+					
+					taxonIdentificationElements = taxonNameMatcher.evaluate(document);
+					parent.addContent(parent.indexOf(
+								taxonIdentificationElements.get(taxonIdentificationElements.size() - 1)) + 1, 
+							numberElements);		
+				}
+				
+				XPathExpression<Element> descriptionMatcher = 
+						xPathFactory.compile("/bio:treatment/description", Filters.element(), 
+								null, Namespace.getNamespace("bio", "http://www.github.com/biosemantics"));
+				List<Element> descriptionElements = descriptionMatcher.evaluate(document);
+				for(Element descriptionElement : new ArrayList<Element>(descriptionElements)) {
+					if(descriptionElement.getText().isEmpty())
+						descriptionElement.setText("empty");
+				}
+				
+				XPathExpression<Element> referenceMatcher = 
+						xPathFactory.compile("/bio:treatment/references", Filters.element(), 
+								null, Namespace.getNamespace("bio", "http://www.github.com/biosemantics"));
+				List<Element> referenceElements = referenceMatcher.evaluate(document);
+				for(Element referenceElement : new ArrayList<Element>(referenceElements)) {
+					Element refElement = new Element("reference");
+					refElement.setText(referenceElement.getText());
+					referenceElement.setText("");
+					referenceElement.addContent(refElement);
+				}
 				writeToFile(document, file);
 			} catch (JDOMException | IOException e) {
 				e.printStackTrace();
@@ -96,6 +201,16 @@ public class ConvertOldSchemaAction implements VolumeAction {
 		}
 	}
 	
+
+	private Element collapseElements(List<Element> collapse, String name) {
+		Element element = new Element(name);
+		String value = "";
+		for(Element c : collapse) {
+			value += c.getText() + "; ";
+		}
+		element.setText(value);
+		return element;
+	}
 
 	private void writeToFile(org.jdom2.Document document, File file) {
 		try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8))) {
@@ -147,6 +262,9 @@ public class ConvertOldSchemaAction implements VolumeAction {
 	    		}
 	    		
 	    		line = line.replaceAll("&", "&amp;");
+	    		
+	    		line = line.replaceAll("(< 45°)", "(&lt; 45°)");
+	    		
 	    		if(!insideKey && !line.contains("<key>")) {
 	    			sb.append(line + "\n");
 	    		}
