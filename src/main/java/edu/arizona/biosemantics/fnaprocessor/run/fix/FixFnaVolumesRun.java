@@ -13,6 +13,7 @@ import com.google.inject.name.Named;
 import edu.arizona.biosemantics.fnaprocessor.action.VolumeAction;
 import edu.arizona.biosemantics.fnaprocessor.action.key.KeyAction;
 import edu.arizona.biosemantics.fnaprocessor.action.parenthesis.ParenthesisAction;
+import edu.arizona.biosemantics.fnaprocessor.action.schema.ConvertOldSchemaAction;
 import edu.arizona.biosemantics.fnaprocessor.run.Run;
 
 public class FixFnaVolumesRun implements Run {
@@ -30,7 +31,8 @@ public class FixFnaVolumesRun implements Run {
 			//KeyAction keyAction
 			//DistributionMapAction distributionMapAction,
 			//PrintLocationAction printLocationAction
-			ParenthesisAction parenthesisAction
+			//ParenthesisAction parenthesisAction
+			ConvertOldSchemaAction schemaAction
 			) {
 		this.volumesDir = volumesDir;
 		VolumeAction[] a = { 
@@ -39,7 +41,8 @@ public class FixFnaVolumesRun implements Run {
 				//printLocationAction, 
 				//distributionMapAction,
 				//keyAction 
-				parenthesisAction
+				//parenthesisAction,
+				schemaAction
 				};
 		this.volumeDirUrlMap = volumeDirUrlMap;
 		this.actions = new ArrayList<VolumeAction>(Arrays.asList(a));
