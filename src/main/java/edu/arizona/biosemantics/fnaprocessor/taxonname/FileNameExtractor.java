@@ -9,12 +9,8 @@ public class FileNameExtractor implements TaxonNameExtractor {
 	@Override
 	public Set<String> extract(File file) throws Exception {
 		Set<String> result = new HashSet<String>();
-		result.add(normalizeTaxonName(file.getName().replace(".xml", "")));
+		result.add(Normalizer.normalize(file.getName().replace(".xml", "")));
 		return result;
-	}
-	
-	protected String normalizeTaxonName(String value) {
-		return value.trim().replaceAll("[^a-zA-Z_0-9.<>\\s]", "").replaceAll("\\s+", " ").toLowerCase();
 	}
 
 }

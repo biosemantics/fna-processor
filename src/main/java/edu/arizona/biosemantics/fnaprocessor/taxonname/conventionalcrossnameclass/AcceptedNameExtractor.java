@@ -15,6 +15,7 @@ import org.jdom2.xpath.XPathExpression;
 import org.jdom2.xpath.XPathFactory;
 
 import edu.arizona.biosemantics.common.taxonomy.Rank;
+import edu.arizona.biosemantics.fnaprocessor.taxonname.Normalizer;
 
 public class AcceptedNameExtractor extends AbstractNameExtractor {
 
@@ -59,8 +60,8 @@ public class AcceptedNameExtractor extends AbstractNameExtractor {
 		}*/
 		
 		for(Element acceptedNameElement : acceptedNameElements) {
-			String rank = normalizeTaxonName(acceptedNameElement.getAttributeValue("rank"));
-			rankNameOptions.put(rank, new HashSet<String>(Arrays.asList(normalizeTaxonName(acceptedNameElement.getValue()))));
+			String rank = Normalizer.normalize(acceptedNameElement.getAttributeValue("rank"));
+			rankNameOptions.put(rank, new HashSet<String>(Arrays.asList(Normalizer.normalize(acceptedNameElement.getValue()))));
 		}
 		return rankNameOptions;
 	}

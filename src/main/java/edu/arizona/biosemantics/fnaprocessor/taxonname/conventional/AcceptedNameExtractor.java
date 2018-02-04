@@ -13,6 +13,8 @@ import org.jdom2.filter.Filters;
 import org.jdom2.xpath.XPathExpression;
 import org.jdom2.xpath.XPathFactory;
 
+import edu.arizona.biosemantics.fnaprocessor.taxonname.Normalizer;
+
 public class AcceptedNameExtractor extends AbstractNameExtractor {
 
 	protected List<LinkedHashMap<String, Set<String>>> createNameOptions(Document document) {
@@ -34,8 +36,8 @@ public class AcceptedNameExtractor extends AbstractNameExtractor {
 			
 			LinkedHashMap<String, Set<String>> rankNameOptions = new LinkedHashMap<String, Set<String>>();
 			for(Element rankElement : rankElements) {
-				String rank = normalizeTaxonName(rankElement.getAttributeValue("rank"));
-				rankNameOptions.put(rank, new HashSet<String>(Arrays.asList(normalizeTaxonName(rankElement.getValue()))));
+				String rank = Normalizer.normalize(rankElement.getAttributeValue("rank"));
+				rankNameOptions.put(rank, new HashSet<String>(Arrays.asList(Normalizer.normalize(rankElement.getValue()))));
 			}
 			result.add(rankNameOptions);
 		}

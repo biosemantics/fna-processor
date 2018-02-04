@@ -17,6 +17,7 @@ import org.jdom2.Document;
 import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
 
+import edu.arizona.biosemantics.fnaprocessor.taxonname.Normalizer;
 import edu.arizona.biosemantics.fnaprocessor.taxonname.TaxonNameExtractor;
 
 /**
@@ -128,7 +129,7 @@ public abstract class AbstractNameExtractor implements TaxonNameExtractor {
 		
 		List<String> result = new ArrayList<String>();
 		for(String name : nameSkeletons) {
-			name = normalizeTaxonName(name);
+			name = Normalizer.normalize(name);
 			if(!name.isEmpty())
 				result.add(name);
 		}
@@ -170,9 +171,5 @@ public abstract class AbstractNameExtractor implements TaxonNameExtractor {
 	}
 
 	protected abstract LinkedHashMap<String, Set<String>> createRankNameOptions(Document document);
-	
-	protected String normalizeTaxonName(String value) {
-		return value.trim().replaceAll("[^a-zA-Z_0-9.<>\\s]", "").replaceAll("\\s+", " ").toLowerCase();
-	}
 	
 }

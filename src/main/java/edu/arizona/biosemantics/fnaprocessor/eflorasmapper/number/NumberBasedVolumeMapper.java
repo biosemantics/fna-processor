@@ -27,14 +27,12 @@ import edu.arizona.biosemantics.fnaprocessor.eflorascrawler.CrawlState;
 import edu.arizona.biosemantics.fnaprocessor.eflorascrawler.CrawlStateProvider;
 import edu.arizona.biosemantics.fnaprocessor.eflorasmapper.MapState;
 import edu.arizona.biosemantics.fnaprocessor.eflorasmapper.MapStateProvider;
-import edu.arizona.biosemantics.fnaprocessor.taxonname.TaxonNameExtractor;
+import edu.arizona.biosemantics.fnaprocessor.taxonname.Normalizer;
 
 public class NumberBasedVolumeMapper implements MapStateProvider {
 	
 	private static final Logger logger = Logger.getLogger(NumberBasedVolumeMapper.class);
 	private Set<File> filesWithoutNumber = new HashSet<File>();
-	private Map<String, File> knownUrlFileMap;
-	private TaxonNameExtractor taxonNameExtractor;
 	private CrawlStateProvider crawlStateProvider;
 	private Map<File, String> volumeDirUrlMap;
 	private XPathFactory xFactory = XPathFactory.instance();
@@ -45,14 +43,11 @@ public class NumberBasedVolumeMapper implements MapStateProvider {
 
 	@Inject
 	public NumberBasedVolumeMapper(
-			@Named("volumeMapper_taxonNameExtractor") TaxonNameExtractor taxonNameExtractor,
 			CrawlStateProvider crawlStateProvider,
 			@Named("knownFileUrlMap") Map<String, File> knownFileUrlMap, 
 			@Named("volumeDirUrlMap")Map<File, String> volumeDirUrlMap) {
 		this.volumeDirUrlMap = volumeDirUrlMap;
-		this.knownUrlFileMap = knownFileUrlMap;
 		this.crawlStateProvider = crawlStateProvider;
-		this.taxonNameExtractor = taxonNameExtractor;
 	}
 	
 	@Override
@@ -99,6 +94,8 @@ public class NumberBasedVolumeMapper implements MapStateProvider {
 
 	private void mapFamily(String url, File volumeDir, MapState mapState,
 			CrawlState crawlState) throws Exception {
+		//if(url.equals("http://www.efloras.org/florataxon.aspx?flora_id=1&taxon_id=104332"))
+		//	System.out.println();
 		File result = null;
 		for(File file : volumeDir.listFiles(new FileFilter() {
 			@Override
@@ -124,8 +121,8 @@ public class NumberBasedVolumeMapper implements MapStateProvider {
 			}
 			
 			if(acceptedNameElements.size() == 1) {
-				if(this.normalizeTaxonName(acceptedNameElements.get(0).getAttributeValue("rank")).equals("family") && 
-					this.normalizeTaxonName(numberElement.getText()).replaceAll("\\.", "").equals(this.normalizeTaxonName(number))) {
+				if(Normalizer.normalize(acceptedNameElements.get(0).getAttributeValue("rank")).equals("family") && 
+						Normalizer.normalize(numberElement.getText()).replaceAll("\\.", "").equals(Normalizer.normalize(number))) {
 					result = file;
 					break;
 				}
@@ -143,7 +140,10 @@ public class NumberBasedVolumeMapper implements MapStateProvider {
 	 * these two will give me the file: search for file with one level above lowest level = rank name source
 	 * number = number of target url in theory
 	 */
-	private void map(String targetUrl, String sourceUrl, File volumeDir, MapState mapState, CrawlState crawlState) throws Exception {
+	private void map(String targetUrl, String sourceUrl, File volumeDir, MapState mapState, CrawlState crawlState) throws Exception {	
+		//if(/*targetUrl.equals("http://www.efloras.org/florataxon.aspx?flora_id=1&taxon_id=104332") ||*/ targetUrl.equals("http://www.efloras.org/florataxon.aspx?flora_id=1&taxon_id=233500270"))
+		//	System.out.println();
+			
 		File sourceFile = mapState.getFile(sourceUrl);
 		if(sourceFile != null) {
 			String sourceName = extractSourceName(sourceFile);
@@ -195,14 +195,14 @@ public class NumberBasedVolumeMapper implements MapStateProvider {
 			
 			int sourceDistance = 2;
 			Element sourceElement = acceptedNameElements.get(acceptedNameElements.size() - sourceDistance);
-			while(this.normalizeTaxonName(sourceElement.getAttributeValue("rank"))
+			while(Normalizer.normalize(sourceElement.getAttributeValue("rank"))
 					.matches("(subgenus|supersection|section|subsection|superseries|series|subseries|superspecies)")) {
 				sourceDistance++;
 				sourceElement = acceptedNameElements.get(acceptedNameElements.size() - sourceDistance);
 			}
 			
-			if(this.normalizeTaxonName(numberElement.getText()).replaceAll("\\.", "").equals(this.normalizeTaxonName(targetNumber)) &&
-					this.normalizeTaxonName(sourceElement.getText()).equals(this.normalizeTaxonName(sourceName))) {
+			if(Normalizer.normalize(numberElement.getText()).replaceAll("\\.", "").equals(Normalizer.normalize(targetNumber)) &&
+					Normalizer.normalize(sourceElement.getText()).equals(Normalizer.normalize(sourceName))) {
 				return file;
 			}
 		}
@@ -216,18 +216,13 @@ public class NumberBasedVolumeMapper implements MapStateProvider {
 		if(taxonDescrSpan == null || taxonDescrSpan.childNodeSize() == 0)
 			return null;
 		for(org.jsoup.nodes.TextNode n : taxonDescrSpan.textNodes()) {
-			String num = this.normalizeTaxonName(n.text()).replaceAll("\\.", "");
+			String num = Normalizer.normalize(n.text()).replaceAll("\\.", "");
 			if(!num.isEmpty()) { 
 				number = num;
 				break;
 			}
 		}
 		return number;
-	}
-	
-	
-	private String normalizeTaxonName(String value) {
-		return value.trim().replaceAll("[^a-zA-Z_0-9.<>\\s]", "").replaceAll("\\s+", " ").toLowerCase();
 	}
 
 	private String extractSourceName(File file) throws Exception {

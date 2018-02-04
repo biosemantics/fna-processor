@@ -11,6 +11,7 @@ import org.jsoup.nodes.Element;
 import com.google.inject.Inject;
 
 import edu.arizona.biosemantics.fnaprocessor.eflorascrawler.documentretrieval.CrawlStateBasedDocumentRetriever;
+import edu.arizona.biosemantics.fnaprocessor.taxonname.Normalizer;
 
 /**
  * Crawls a specific FNA volume and all the taxon concepts contained.
@@ -87,10 +88,6 @@ public class VolumeCrawler implements CrawlStateProvider {
 				logger.warn("Page without panelTaxonList but also without panelTaxonTreatment");
 		}
 	}
-	
-	private String normalizeTaxonName(String value) {
-		return value.trim().replaceAll("[^a-zA-Z_0-9.<>\\s]", "").replaceAll("\\s+", " ").toLowerCase();
-	}
 
 	private String normalizeUrl(String url) {
 		Pattern keyPattern = Pattern.compile("^.*(&key_no=\\d).*$");
@@ -129,7 +126,7 @@ public class VolumeCrawler implements CrawlStateProvider {
 		for(Element b : a.select("b")) {
 			sb.append(b.ownText() + " ");
 		}
-		return normalizeTaxonName(sb.toString());
+		return Normalizer.normalize(sb.toString());
 	}
 	
 	private String getLinkText(Element a) {

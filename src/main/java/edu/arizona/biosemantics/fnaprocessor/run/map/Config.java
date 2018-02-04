@@ -33,7 +33,7 @@ public class Config extends BaseConfig {
 		Map<String, File> volumeUrlDirMap = new LinkedHashMap<String, File>();
 		
 		int[] volumes = new int[] {
-			2,3,4,5,6,7,8,9,19,22,23,26,27,28
+			2//,3,4,5,6,7,8,9,19,22,23,26,27,28
 			//2,3,4,5,6,8,9,
 			//7 is slow
 			//19, //this one is slow as it contains 19,20,21: Don't use synonym name matching for this as slow too many synonyms
@@ -44,12 +44,24 @@ public class Config extends BaseConfig {
 		for(int volume : volumes) {
 			String volumeUrl = "http://www.efloras.org/volume_page.aspx?volume_id=10" + String.format("%02d", volume) + "&flora_id=1";
 			File volumeDir = new File(Configuration.fnaTextProcessingDirectory + File.separator + "V" + volume);
-			
-			//volume 19 is for 19-20-21 volumes since they are managed under one and the same url on efloras
-			if(volume == 19) {
-				volumeUrl = "http://www.efloras.org/volume_page.aspx?volume_id=1019&flora_id=1";
-				volumeDir = new File(Configuration.fnaTextProcessingDirectory + File.separator + "V19-20-21");
+			switch(volume) {
+			case 2:
+				volumeDir = new File(Configuration.fnaTextProcessingDirectory + File.separator + "V2" + File.separator + "numerical_files");
+				break;
+			case 3:
+				volumeDir = new File(Configuration.fnaTextProcessingDirectory + File.separator + "V2" + File.separator + "numerical_files");
+				break;
+			case 19:
+				//volume 19 is for 19-20-21 volumes since they are managed under one and the same url on efloras
+				if(volume == 19) {
+					volumeUrl = "http://www.efloras.org/volume_page.aspx?volume_id=1019&flora_id=1";
+					volumeDir = new File(Configuration.fnaTextProcessingDirectory + File.separator + "V19-20-21");
+				}
+				break;
+			case 22:
+				volumeDir = new File(Configuration.fnaTextProcessingDirectory + File.separator + "V22" + File.separator + "numerical_files");
 			}
+			
 			volumeUrlNameMap.put(volumeUrl, "v" + volume);
 			volumeDirUrlMap.put(volumeDir, volumeUrl);
 			volumeUrlDirMap.put(volumeUrl, volumeDir);

@@ -2,17 +2,28 @@ package edu.arizona.biosemantics.fnaprocessor.eflorasmapper;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.JDOMException;
+import org.jdom2.filter.Filters;
+import org.jdom2.input.SAXBuilder;
+import org.jdom2.xpath.XPathExpression;
+import org.jdom2.xpath.XPathFactory;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
+import edu.arizona.biosemantics.common.taxonomy.Rank;
+import edu.arizona.biosemantics.fnaprocessor.Configuration;
 import edu.arizona.biosemantics.fnaprocessor.eflorascrawler.CrawlState;
 import edu.arizona.biosemantics.fnaprocessor.eflorascrawler.CrawlStateProvider;
 import edu.arizona.biosemantics.fnaprocessor.taxonname.FileNameExtractor;
@@ -21,6 +32,14 @@ import edu.arizona.biosemantics.fnaprocessor.taxonname.combinatorics.AnyNameExtr
 
 public class DefaultMapStateReporter implements MapStateReporter {
 
+	static Comparator<Element> rankComparator = new Comparator<Element>() {
+		@Override
+		public int compare(Element o1, Element o2) {
+			return Rank.valueOf(o1.getAttribute("rank").getValue().trim().toUpperCase()).getId() - 
+					Rank.valueOf(o2.getAttribute("rank").getValue().trim().toUpperCase()).getId();
+		}	
+	};
+	
 	private static Logger logger = Logger.getLogger(DefaultMapStateReporter.class);
 	private AcceptedNameExtractor acceptedNameExtractor;
 	private AnyNameExtractor anyNameExtractor;
@@ -47,7 +66,7 @@ public class DefaultMapStateReporter implements MapStateReporter {
 		for(File file : mapState.getMappedFiles()) {
 			String url = mapState.getUrl(file);
 			String linkName = crawlState.getLinkName(url);
-			logger.info(file.getName() + " -> (" + linkName + ") " + url);
+			logger.info(extractName(file) + " " + file.getName() + " -> (" + linkName + ") " + url);
 		}
 				
 		logger.info("*** Mapped the following files to the same URL");
@@ -60,17 +79,21 @@ public class DefaultMapStateReporter implements MapStateReporter {
 				}
 			}
 			if(files.size() > 1) {
-				logger.info(files + " -> " + mapState.getUrl(fileA));
+				for(File file : files) 
+					logger.info(extractName(file) + " " + file.getName() + " -> " + mapState.getUrl(fileA));
 			}
 		}		
 		
 		logger.info("*** Did not map the following " + getUnmappedFiles(mapState).size() + " files: ");
 		for(File file : getUnmappedFiles(mapState)) {
-			logger.info(file.getName());
-			/*logger.info("* Accepted name candidates: ");
+			logger.info(extractName(file) + " " + file.getName());
+			
+			/*
+			logger.info("* Accepted name candidates: ");
 			for(String name : this.acceptedNameExtractor.extract(file)) {
 				logger.info("-> " + name);
 			}
+			/*
 			logger.info("* Name candidates considering synonym info: ");
 			for(String name : this.anyNameExtractor.extract(file)) {
 				logger.info("-> " + name);
@@ -115,6 +138,28 @@ public class DefaultMapStateReporter implements MapStateReporter {
 				result.add(file);
 		}
 		return result;
+	}
+	
+	private static String extractName(File f) throws JDOMException, IOException {
+		SAXBuilder builder = new SAXBuilder();
+		Document document = (Document) builder.build(f);
+		
+		XPathFactory xFactory = XPathFactory.instance();
+		XPathExpression<Element> acceptedNameExpression =
+				xFactory.compile("//taxon_identification[@status='ACCEPTED']/taxon_name", Filters.element());
+		
+		List<Element> acceptedNameElements = new ArrayList<Element>(acceptedNameExpression.evaluate(document));
+		acceptedNameElements.sort(rankComparator);
+		
+		StringBuffer sb = new StringBuffer();
+		for(Element el : acceptedNameElements) {
+			sb.append(el.getValue() + " ");
+		}
+		
+		//AcceptedNameExtractor acceptedNameExtractor = new AcceptedNameExtractor();
+		//Set<String> set = acceptedNameExtractor.extract(f);
+		//return value.trim().replaceAll("[^a-zA-Z_0-9.<>\\s]", "").replaceAll("\\s+", " ").toLowerCase();
+		return sb.toString().replaceAll("\\s+", " ");
 	}
 	
 }

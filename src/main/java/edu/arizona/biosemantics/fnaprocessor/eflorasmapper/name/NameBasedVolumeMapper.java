@@ -28,6 +28,7 @@ import edu.arizona.biosemantics.fnaprocessor.eflorascrawler.CrawlState;
 import edu.arizona.biosemantics.fnaprocessor.eflorascrawler.CrawlStateProvider;
 import edu.arizona.biosemantics.fnaprocessor.eflorasmapper.MapState;
 import edu.arizona.biosemantics.fnaprocessor.eflorasmapper.MapStateProvider;
+import edu.arizona.biosemantics.fnaprocessor.taxonname.Normalizer;
 import edu.arizona.biosemantics.fnaprocessor.taxonname.TaxonNameExtractor;
 
 /**
@@ -61,21 +62,26 @@ public class NameBasedVolumeMapper implements MapStateProvider {
 				return f.isFile() && f.getName().endsWith(".xml");
 			}
 		})) {
-			//logger.trace(file.getName());
-			//logger.info(taxonNameExtractor.extract(file));
-			String[] fileFamilyNumber = getFamilyNumber(file);
-			if(fileFamilyNumber != null && familyNumber != null) {
-				if(fileFamilyNumber[0].equals(familyNumber[0]) && 
-						fileFamilyNumber[1].equals(familyNumber[1])) {
-					familyNumberMatchingSet.add(file);
+			//if(name.contains("botrychium acuminatum") && file.getName().equals("338.xml")) {
+			//if(name.equals("isotes prototypus") && file.getName().equals("544.xml")) {
+			//if(file.getName().equals("430.xml")) {
+				
+				//logger.trace(file.getName());
+				//logger.info(taxonNameExtractor.extract(file));
+				String[] fileFamilyNumber = getFamilyNumber(file);
+				if(fileFamilyNumber != null && familyNumber != null) {
+					if(fileFamilyNumber[0].equals(familyNumber[0]) && 
+							fileFamilyNumber[1].equals(familyNumber[1])) {
+						familyNumberMatchingSet.add(file);
+					}
 				}
-			}
-			
-			Set<String> extractedNameOptions = taxonNameExtractor.extract(file);
-			if(extractedNameOptions.contains(normalizeTaxonName(name))) {
-				fileNameMatches.add(file);
-				optionsFiles.put(file, extractedNameOptions);
-			}
+				
+				Set<String> extractedNameOptions = taxonNameExtractor.extract(file);
+				if(extractedNameOptions.contains(Normalizer.normalize(name))) {
+					fileNameMatches.add(file);
+					optionsFiles.put(file, extractedNameOptions);
+				} 
+			//}
 		}
 		
 		//small options are preferred as it indicates more confidence
@@ -117,8 +123,8 @@ public class NameBasedVolumeMapper implements MapStateProvider {
 		Element familyElement = familyExpression.evaluateFirst(document);
 		if(numberElement == null || familyExpression == null)
 			return null;
-		return new String[] { normalizeTaxonName(numberElement.getText()).replaceAll("\\.", ""), 
-				normalizeTaxonName(familyElement.getText()) };
+		return new String[] { Normalizer.normalize(numberElement.getText()).replaceAll("\\.", ""), 
+				Normalizer.normalize(familyElement.getText()) };
 	}
 	
 	private String[] getFamilyNumber(CrawlState crawlState, String url) {
@@ -146,7 +152,7 @@ public class NameBasedVolumeMapper implements MapStateProvider {
 			return null;
 				
 		for(org.jsoup.nodes.TextNode n : taxonDescrSpan.textNodes()) {
-			String number = this.normalizeTaxonName(n.text());
+			String number = Normalizer.normalize(n.text());
 			if(!number.isEmpty()) { 
 				familyNumber = number;
 				break;
@@ -154,8 +160,8 @@ public class NameBasedVolumeMapper implements MapStateProvider {
 		}
 		if(familyNumber == null)
 			return null;
-		return new String[] { normalizeTaxonName(familyNumber).replaceAll("\\.", ""), 
-				normalizeTaxonName(familyName) };
+		return new String[] { Normalizer.normalize(familyNumber).replaceAll("\\.", ""), 
+				Normalizer.normalize(familyName) };
 	}
 
 	@Override
@@ -167,12 +173,15 @@ public class NameBasedVolumeMapper implements MapStateProvider {
 		logger.info("Starting to map the " + crawlState.getUrls().size() + " urls");
 		for(String url : crawlState.getUrls()) {
 
+			//if(url.equals("http://www.efloras.org/florataxon.aspx?flora_id=1&taxon_id=233500270"))
+			//	System.out.println();
 			String[] familyNumber = this.getFamilyNumber(crawlState, url);
 			String name = crawlState.getLinkName(url);
 			logger.trace(i++ + " " + name + ": " + url);
 			
 			//a single (not-yet mapped) taxon treatment page
 			if(name != null) {
+				name = Normalizer.normalize(name);
 				File file = this.getVolumeFileWithInfo(volumeDir, familyNumber, name);
 				if(file == null) {
 					logger.error("Could not map document with name: " + name + " to file: " + url);
@@ -188,7 +197,4 @@ public class NameBasedVolumeMapper implements MapStateProvider {
 		return mapState;
 	}
 	
-	private String normalizeTaxonName(String value) {
-		return value.trim().replaceAll("[^a-zA-Z_0-9.<>\\s]", "").replaceAll("\\s+", " ").toLowerCase();
-	}
 }
