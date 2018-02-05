@@ -159,7 +159,7 @@ public class DefaultMapStateReporter implements MapStateReporter {
 		//AcceptedNameExtractor acceptedNameExtractor = new AcceptedNameExtractor();
 		//Set<String> set = acceptedNameExtractor.extract(f);
 		//return value.trim().replaceAll("[^a-zA-Z_0-9.<>\\s]", "").replaceAll("\\s+", " ").toLowerCase();
-		return sb.toString().replaceAll("\\s+", " ");
+		return sb.toString().replaceAll("\\s+", " ").trim();
 	}
 	
 }

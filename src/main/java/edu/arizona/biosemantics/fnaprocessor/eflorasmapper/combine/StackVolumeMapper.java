@@ -17,9 +17,6 @@ import edu.arizona.biosemantics.fnaprocessor.eflorasmapper.number.NumberBasedVol
 public class StackVolumeMapper implements MapStateProvider {
 
 	private static final Logger logger = Logger.getLogger(StackVolumeMapper.class);
-	private KnownVolumeMapper knownVolumeMapper;
-	private NameBasedVolumeMapper nameBasedMapper;
-	private NumberBasedVolumeMapper numberBasedMaper;
 	private ArrayList<MapStateProvider> mapStateProviderStack;
 	private MapStateReporter mapStateReporter;
 
@@ -28,14 +25,11 @@ public class StackVolumeMapper implements MapStateProvider {
 			NumberBasedVolumeMapper numberBasedMaper,
 			NameBasedVolumeMapper nameBasedMapper, 
 			MapStateReporter mapStateReporter) {
-		this.knownVolumeMapper = knownVolumeMapper;
-		this.nameBasedMapper = nameBasedMapper;
-		this.numberBasedMaper = numberBasedMaper;
 		this.mapStateReporter = mapStateReporter;
 		this.mapStateProviderStack = new ArrayList<MapStateProvider>();
 		this.mapStateProviderStack.add(knownVolumeMapper);
 		this.mapStateProviderStack.add(numberBasedMaper);
-		this.mapStateProviderStack.add(nameBasedMapper);
+		//this.mapStateProviderStack.add(nameBasedMapper);
 	}
 	
 	@Override

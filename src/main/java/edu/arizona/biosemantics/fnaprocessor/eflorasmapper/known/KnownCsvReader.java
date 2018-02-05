@@ -30,19 +30,22 @@ public class KnownCsvReader {
 	
 	public Map<String, File> read(String volumeUrl) throws FileNotFoundException, IOException {
 		Map<String, File> result = new HashMap<String, File>();
-		try(CSVReader reader = new CSVReader(new FileReader(new File("known-" + volumeUrlNameMap.get(volumeUrl) + ".csv")))) {
-			List<String[]> lines = reader.readAll();
-			for(String[] line : lines) {
-				if(line[0].trim().isEmpty() || line[1].trim().isEmpty())
-					continue;
-				
-				if(line[0].contains(")")) {
-					line[0] = line[0].split("\\)")[1].trim();
+		File known = new File("known-" + volumeUrlNameMap.get(volumeUrl) + ".csv");
+		if(known.exists() && known.isFile()) {
+			try(CSVReader reader = new CSVReader(new FileReader(new File("known-" + volumeUrlNameMap.get(volumeUrl) + ".csv")))) {
+				List<String[]> lines = reader.readAll();
+				for(String[] line : lines) {
+					if(line[0].trim().isEmpty() || line[1].trim().isEmpty())
+						continue;
+					
+					if(line[0].contains(")")) {
+						line[0] = line[0].split("\\)")[1].trim();
+					}
+					if(line[1].contains(")")) {
+						line[1] = line[1].split("\\)")[1].trim();
+					}
+					result.put(line[1], new File(volumeUrlDirMap.get(volumeUrl), line[0]));
 				}
-				if(line[1].contains(")")) {
-					line[1] = line[1].split("\\)")[1].trim();
-				}
-				result.put(line[1], new File(volumeUrlDirMap.get(volumeUrl), line[0]));
 			}
 		}
 		return result;

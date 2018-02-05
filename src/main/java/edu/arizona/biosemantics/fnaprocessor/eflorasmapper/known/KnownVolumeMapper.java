@@ -15,19 +15,20 @@ public class KnownVolumeMapper implements MapStateProvider {
 	
 	private static final Logger logger = Logger.getLogger(KnownVolumeMapper.class);
 	private Map<String, File> knownUrlFileMap;
+	private KnownCsvReader knownCsvReader;
 
 	@Inject
 	public KnownVolumeMapper(
-			@Named("knownFileUrlMap") Map<String, File> knownFileUrlMap) {
-		this.knownUrlFileMap = knownFileUrlMap;
+			KnownCsvReader knownCsvReader) {
+		this.knownCsvReader = knownCsvReader;
 	}
 	
 	@Override
 	public MapState getMapState(File volumeDir, MapState mapState)
 			throws Exception {
-		for(String url : knownUrlFileMap.keySet()) {
-			if(!mapState.hasFile(url))
-				mapState.putFileUrlMap(knownUrlFileMap.get(url), url);
+		Map<String, File> knownMapping = this.knownCsvReader.read(mapState.getVolumeUrl());
+		for(String url : this.knownCsvReader.read(mapState.getVolumeUrl()).keySet()) {
+			mapState.putFileUrlMap(knownMapping.get(url), url);
 		}
 		logger.trace("Done mapping known urls");
 		return mapState;

@@ -76,7 +76,7 @@ public class KnownCsvWriter {
 			}
 			
 			for(File file : getUnmappedFiles(mapState)) {
-				lines.add(new String[] { "(" +extractName(file) + ")" + file.getName(), ""});
+				lines.add(new String[] { "(" + extractName(file) + ") " + file.getName(), ""});
 			}
 			
 			List<String> unmappedUrls = new ArrayList<String>();
@@ -130,7 +130,7 @@ public class KnownCsvWriter {
 		//AcceptedNameExtractor acceptedNameExtractor = new AcceptedNameExtractor();
 		//Set<String> set = acceptedNameExtractor.extract(f);
 		//return value.trim().replaceAll("[^a-zA-Z_0-9.<>\\s]", "").replaceAll("\\s+", " ").toLowerCase();
-		return sb.toString().replaceAll("\\s+", " ");
+		return sb.toString().replaceAll("\\s+", " ").trim();
 	}
 	
 }

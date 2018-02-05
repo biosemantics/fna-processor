@@ -83,11 +83,6 @@ public class Config extends BaseConfig {
 		bind(TaxonNameExtractor.class).annotatedWith(Names.named("volumeMapper_taxonNameExtractor"))
 			.toInstance(collectiveNameExtractor);
 		
-		Map<String, File> knownUrlToFileMap = new HashMap<String, File>();
-
-		bind(new TypeLiteral<Map<String, File>>() {}).annotatedWith(Names.named("knownFileUrlMap"))
-			.toInstance(knownUrlToFileMap);
-		
 		bind(MapStateProvider.class).to(StackVolumeMapper.class);
 		bind(MapStateReporter.class).to(DefaultMapStateReporter.class);
 		

@@ -54,10 +54,8 @@ public class Config extends BaseConfig {
 		.toInstance(volumeUrlDirMap);
 		
 				
-		Map<String, File> knownFileUrlMapping = new HashMap<String, File>();
 		bind(File.class).annotatedWith(Names.named("volumesDir")).toInstance(new File(Configuration.fnaTextProcessingDirectory));
 		bind(Run.class).to(FixFnaVolumesRun.class);
-		bind(new TypeLiteral<Map<String, File>>() {}).toInstance(knownFileUrlMapping);
 		
 
 	}

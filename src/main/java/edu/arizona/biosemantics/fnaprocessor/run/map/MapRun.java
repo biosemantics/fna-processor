@@ -45,10 +45,6 @@ public class MapRun implements Run {
 	public void run() throws Exception {
 		for(File volumeDir : volumeDirUrlMap.keySet()) {
 			MapState mapState = mapStateProvider.getMapState(volumeDir, new MapState(volumeDirUrlMap.get(volumeDir)));
-			Map<String, File> knownMapping = this.knownCsvReader.read(mapState.getVolumeUrl());
-			for(String url : this.knownCsvReader.read(mapState.getVolumeUrl()).keySet()) {
-				mapState.putFileUrlMap(knownMapping.get(url), url);
-			}
 			reporter.report(mapState);
 			this.mapStateStorer.store(mapState);
 			this.knownCsvWriter.write(mapState);

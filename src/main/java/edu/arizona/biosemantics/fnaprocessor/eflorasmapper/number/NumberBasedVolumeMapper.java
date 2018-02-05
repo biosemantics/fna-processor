@@ -15,6 +15,7 @@ import org.apache.log4j.Logger;
 import org.jdom2.Element;
 import org.jdom2.filter.Filters;
 import org.jdom2.input.SAXBuilder;
+import org.jdom2.output.XMLOutputter;
 import org.jdom2.xpath.XPathExpression;
 import org.jdom2.xpath.XPathFactory;
 import org.jsoup.nodes.Document;
@@ -44,7 +45,6 @@ public class NumberBasedVolumeMapper implements MapStateProvider {
 	@Inject
 	public NumberBasedVolumeMapper(
 			CrawlStateProvider crawlStateProvider,
-			@Named("knownFileUrlMap") Map<String, File> knownFileUrlMap, 
 			@Named("volumeDirUrlMap")Map<File, String> volumeDirUrlMap) {
 		this.volumeDirUrlMap = volumeDirUrlMap;
 		this.crawlStateProvider = crawlStateProvider;
@@ -94,8 +94,8 @@ public class NumberBasedVolumeMapper implements MapStateProvider {
 
 	private void mapFamily(String url, File volumeDir, MapState mapState,
 			CrawlState crawlState) throws Exception {
-		//if(url.equals("http://www.efloras.org/florataxon.aspx?flora_id=1&taxon_id=104332"))
-		//	System.out.println();
+		if(url.equals("http://www.efloras.org/florataxon.aspx?flora_id=1&taxon_id=10691"))
+			System.out.println();
 		File result = null;
 		for(File file : volumeDir.listFiles(new FileFilter() {
 			@Override
@@ -112,17 +112,28 @@ public class NumberBasedVolumeMapper implements MapStateProvider {
 			if(numberElement == null) { 
 				this.filesWithoutNumber.add(file);
 				logger.warn("Did not find number element in file " + file);
-				continue;
+				//continue;
 			}
 			String number = this.extractNumber(url, crawlState);
 			if(number == null) {
 				logger.warn("Did not find number in url: " + number);
-				break;
+				//break;
 			}
 			
 			if(acceptedNameElements.size() == 1) {
+				/*System.out.println(crawlState.getLinkName(url));
+				System.out.println(Normalizer.normalize(number));
+				System.out.println(Normalizer.normalize(acceptedNameElements.get(0).getText()));
+				System.out.println(Normalizer.normalize(numberElement.getText()).replaceAll("\\.", ""));*/
+				
+				
 				if(Normalizer.normalize(acceptedNameElements.get(0).getAttributeValue("rank")).equals("family") && 
-						Normalizer.normalize(numberElement.getText()).replaceAll("\\.", "").equals(Normalizer.normalize(number))) {
+						Normalizer.normalize(acceptedNameElements.get(0).getText()).equals(crawlState.getLinkName(url)) //&&
+						/*(
+						numberElement == null ||
+						number == null ||
+						Normalizer.normalize(numberElement.getText()).replaceAll("\\.", "").equals(Normalizer.normalize(number)) || 
+						)*/) {
 					result = file;
 					break;
 				}
@@ -141,6 +152,8 @@ public class NumberBasedVolumeMapper implements MapStateProvider {
 	 * number = number of target url in theory
 	 */
 	private void map(String targetUrl, String sourceUrl, File volumeDir, MapState mapState, CrawlState crawlState) throws Exception {	
+		if(targetUrl.equals("http://www.efloras.org/florataxon.aspx?flora_id=1&taxon_id=10871")) 
+			System.out.println();
 		//if(/*targetUrl.equals("http://www.efloras.org/florataxon.aspx?flora_id=1&taxon_id=104332") ||*/ targetUrl.equals("http://www.efloras.org/florataxon.aspx?flora_id=1&taxon_id=233500270"))
 		//	System.out.println();
 			

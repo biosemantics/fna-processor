@@ -62,10 +62,16 @@ public class NameBasedVolumeMapper implements MapStateProvider {
 				return f.isFile() && f.getName().endsWith(".xml");
 			}
 		})) {
-			//if(name.contains("botrychium acuminatum") && file.getName().equals("338.xml")) {
+			//if(name.equals("cannabaceae") && file.getName().equals("632.xml")) {
 			//if(name.equals("isotes prototypus") && file.getName().equals("544.xml")) {
 			//if(file.getName().equals("430.xml")) {
 				
+				
+				//make an exception in the number matching requirement below for th case of families
+				if(isFamily(file)) {
+					familyNumberMatchingSet.add(file);
+				}
+					
 				//logger.trace(file.getName());
 				//logger.info(taxonNameExtractor.extract(file));
 				String[] fileFamilyNumber = getFamilyNumber(file);
@@ -109,6 +115,17 @@ public class NameBasedVolumeMapper implements MapStateProvider {
 		return null;
 	}
 
+	private boolean isFamily(File file) throws JDOMException, IOException {
+		SAXBuilder builder = new SAXBuilder();
+		org.jdom2.Document document = (org.jdom2.Document) builder.build(file);
+		
+		XPathFactory xFactory = XPathFactory.instance();
+		XPathExpression<Element> familyExpression =
+				xFactory.compile("//taxon_identification[@status='ACCEPTED']/taxon_name", Filters.element());
+		List<Element> result = familyExpression.evaluate(document);
+		return result.size() == 1 && result.get(0).getAttributeValue("rank").equalsIgnoreCase("family");
+	}
+
 	private String[] getFamilyNumber(File file) throws JDOMException, IOException {
 		SAXBuilder builder = new SAXBuilder();
 		org.jdom2.Document document = (org.jdom2.Document) builder.build(file);
@@ -121,10 +138,13 @@ public class NameBasedVolumeMapper implements MapStateProvider {
 		
 		Element numberElement = numberExpression.evaluateFirst(document);
 		Element familyElement = familyExpression.evaluateFirst(document);
-		if(numberElement == null || familyExpression == null)
-			return null;
-		return new String[] { Normalizer.normalize(numberElement.getText()).replaceAll("\\.", ""), 
-				Normalizer.normalize(familyElement.getText()) };
+		String number = "";
+		if(numberElement != null)
+			number = Normalizer.normalize(numberElement.getText()).replaceAll("\\.", "");
+		String family = "";
+		if(familyElement != null)
+			family = Normalizer.normalize(familyElement.getText());
+		return new String[] { number, family };
 	}
 	
 	private String[] getFamilyNumber(CrawlState crawlState, String url) {
@@ -173,8 +193,8 @@ public class NameBasedVolumeMapper implements MapStateProvider {
 		logger.info("Starting to map the " + crawlState.getUrls().size() + " urls");
 		for(String url : crawlState.getUrls()) {
 
-			//if(url.equals("http://www.efloras.org/florataxon.aspx?flora_id=1&taxon_id=233500270"))
-			//	System.out.println();
+			if(url.equals("http://www.efloras.org/florataxon.aspx?flora_id=1&taxon_id=220002292"))
+				System.out.println();
 			String[] familyNumber = this.getFamilyNumber(crawlState, url);
 			String name = crawlState.getLinkName(url);
 			logger.trace(i++ + " " + name + ": " + url);

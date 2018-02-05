@@ -29,15 +29,12 @@ public class Config extends BaseConfig {
 		volumeActions.add(new FindDuplicateAction());
 		volumeActions.add(new TaxonNameValidationAction());
 		
-		Map<String, File> knownFileUrlMapping = new HashMap<String, File>();
-		
 		bind(File.class).annotatedWith(Names.named("volumesDir")).toInstance(new File(Configuration.fnaTextProcessingDirectory));
 		bind(new TypeLiteral<List<VolumeAction>>() {}).toInstance(volumeActions);
 		bind(Run.class).to(CrawlEfloraVolumesAndSerializeToDiskRun.class);
 		bind(CrawlState.class).to(CrawlState.class); //could load a existing one from serialized
 		bind(DocumentRetriever.class).to(CrawlStateBasedDocumentRetriever.class);
 		bind(HrefResolver.class).to(HrefResolver.class);
-		bind(new TypeLiteral<Map<String, File>>() {}).toInstance(knownFileUrlMapping);
 	}
 
 }
