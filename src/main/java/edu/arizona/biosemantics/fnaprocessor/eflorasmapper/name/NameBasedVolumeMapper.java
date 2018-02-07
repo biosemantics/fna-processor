@@ -71,16 +71,18 @@ public class NameBasedVolumeMapper implements MapStateProvider {
 				if(isFamily(file)) {
 					familyNumberMatchingSet.add(file);
 				}
+				
+				familyNumberMatchingSet.add(file);
 					
 				//logger.trace(file.getName());
 				//logger.info(taxonNameExtractor.extract(file));
-				String[] fileFamilyNumber = getFamilyNumber(file);
+				/*String[] fileFamilyNumber = getFamilyNumber(file);
 				if(fileFamilyNumber != null && familyNumber != null) {
 					if(fileFamilyNumber[0].equals(familyNumber[0]) && 
 							fileFamilyNumber[1].equals(familyNumber[1])) {
 						familyNumberMatchingSet.add(file);
 					}
-				}
+				}*/
 				
 				Set<String> extractedNameOptions = taxonNameExtractor.extract(file);
 				if(extractedNameOptions.contains(Normalizer.normalize(name))) {
@@ -207,7 +209,7 @@ public class NameBasedVolumeMapper implements MapStateProvider {
 					logger.error("Could not map document with name: " + name + " to file: " + url);
 				} else {
 					if(!mapState.hasFile(url)) {
-						mapState.putFileUrlMap(file, url);
+						mapState.putFileUrlMap(file, url, this.getClass());
 						logger.trace("mapped file to document");
 					}
 				}

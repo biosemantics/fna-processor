@@ -7,10 +7,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import edu.arizona.biosemantics.fnaprocessor.eflorasmapper.name.NameBasedVolumeMapper;
+
 public class MapState implements Serializable {
 
 	private Map<File, String> fileUrlMap = new HashMap<File, String>();
 	private Map<String, File> urlFileMap = new HashMap<String, File>();
+	private Map<File, Class<?>> fileMapper = new HashMap<File, Class<?>>();
 	private String volumeUrl;
 	
 	public MapState(String volumeUrl) {
@@ -30,9 +33,10 @@ public class MapState implements Serializable {
 		this.urlFileMap = new HashMap<String, File>();
 	}
 	
-	public void putFileUrlMap(File file, String url) {
+	public void putFileUrlMap(File file, String url, Class<?> mapper) {
 		this.fileUrlMap.put(file, url);
-		this.urlFileMap.put(url, file);	
+		this.urlFileMap.put(url, file);
+		this.fileMapper.put(file, mapper);
 	}
 	
 	public String getUrl(File file) {
@@ -53,5 +57,9 @@ public class MapState implements Serializable {
 
 	public File getFile(String url) {
 		return this.urlFileMap.get(url);
+	}
+
+	public Class<?> getMapper(File file) {
+		return this.fileMapper.get(file);
 	}
 }

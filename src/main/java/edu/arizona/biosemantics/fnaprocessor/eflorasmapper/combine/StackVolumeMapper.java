@@ -29,7 +29,7 @@ public class StackVolumeMapper implements MapStateProvider {
 		this.mapStateProviderStack = new ArrayList<MapStateProvider>();
 		this.mapStateProviderStack.add(knownVolumeMapper);
 		this.mapStateProviderStack.add(numberBasedMaper);
-		//this.mapStateProviderStack.add(nameBasedMapper);
+		this.mapStateProviderStack.add(nameBasedMapper);
 	}
 	
 	@Override

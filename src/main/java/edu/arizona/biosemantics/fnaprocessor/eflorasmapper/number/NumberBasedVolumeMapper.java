@@ -142,7 +142,7 @@ public class NumberBasedVolumeMapper implements MapStateProvider {
 		if(result == null)
 			logger.warn("Could not map family: " + url);
 		else
-			mapState.putFileUrlMap(result, url);
+			mapState.putFileUrlMap(result, url, this.getClass());
 	}
 
 	/**
@@ -169,7 +169,7 @@ public class NumberBasedVolumeMapper implements MapStateProvider {
 			if(targetFile == null)
 				logger.info("could not find file for " + targetUrl);
 			else
-				mapState.putFileUrlMap(targetFile, targetUrl);
+				mapState.putFileUrlMap(targetFile, targetUrl, this.getClass());
 		} else {
 			logger.info("Could not find file for the following URL because source url did not have file mapping" + targetUrl + "("+ sourceUrl + ")");
 		}

@@ -71,8 +71,9 @@ public class KnownCsvWriter {
 			
 			for(File file : mapState.getMappedFiles()) {
 				String url = mapState.getUrl(file);
+				Class<?> mapper = mapState.getMapper(file);
 				String linkName = crawlState.getLinkName(url);
-				lines.add(new String[] { "(" + extractName(file) + ") " + file.getName(), "(" + linkName + ") " + url });
+				lines.add(new String[] { "(" + extractName(file) + ") " + file.getName(), "(" + linkName + ") " + url, mapper.getName() });
 			}
 			
 			for(File file : getUnmappedFiles(mapState)) {
