@@ -22,14 +22,15 @@ public class StackVolumeMapper implements MapStateProvider {
 
 	@Inject
 	public StackVolumeMapper(KnownVolumeMapper knownVolumeMapper,
-			NumberBasedVolumeMapper numberBasedMaper,
+			NumberBasedVolumeMapper numberBasedMapper,
 			NameBasedVolumeMapper nameBasedMapper, 
 			MapStateReporter mapStateReporter) {
 		this.mapStateReporter = mapStateReporter;
 		this.mapStateProviderStack = new ArrayList<MapStateProvider>();
 		this.mapStateProviderStack.add(knownVolumeMapper);
-		this.mapStateProviderStack.add(numberBasedMaper);
+		this.mapStateProviderStack.add(numberBasedMapper);
 		this.mapStateProviderStack.add(nameBasedMapper);
+		this.mapStateProviderStack.add(numberBasedMapper);
 	}
 	
 	@Override

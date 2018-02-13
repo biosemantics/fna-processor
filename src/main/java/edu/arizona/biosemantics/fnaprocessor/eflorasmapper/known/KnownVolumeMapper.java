@@ -14,7 +14,6 @@ import edu.arizona.biosemantics.fnaprocessor.eflorasmapper.MapStateProvider;
 public class KnownVolumeMapper implements MapStateProvider {
 	
 	private static final Logger logger = Logger.getLogger(KnownVolumeMapper.class);
-	private Map<String, File> knownUrlFileMap;
 	private KnownCsvReader knownCsvReader;
 
 	@Inject

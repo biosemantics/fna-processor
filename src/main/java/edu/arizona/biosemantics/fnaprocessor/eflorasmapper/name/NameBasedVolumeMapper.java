@@ -62,6 +62,8 @@ public class NameBasedVolumeMapper implements MapStateProvider {
 				return f.isFile() && f.getName().endsWith(".xml");
 			}
 		})) {
+
+			//if(name.contains("argemone munita") && file.getName().equals("102.xml")) {
 			//if(name.equals("cannabaceae") && file.getName().equals("632.xml")) {
 			//if(name.equals("isotes prototypus") && file.getName().equals("544.xml")) {
 			//if(file.getName().equals("430.xml")) {

@@ -23,7 +23,6 @@ import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 import org.jdom2.xpath.XPathExpression;
 import org.jdom2.xpath.XPathFactory;
-import org.jsoup.nodes.Document;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -31,14 +30,17 @@ import com.google.inject.name.Named;
 import edu.arizona.biosemantics.fnaprocessor.action.VolumeAction;
 import edu.arizona.biosemantics.fnaprocessor.eflorascrawler.CrawlState;
 import edu.arizona.biosemantics.fnaprocessor.eflorascrawler.CrawlStateProvider;
-import edu.arizona.biosemantics.fnaprocessor.taxonname.TaxonNameExtractor;
 
+/**
+ * ConvertOldSchemaAction converts files of a volume directory that are valid against an old version
+ * of Charaparser's input schema to files valid against the latest version of Charaparser's input schema.
+ */
 public class ConvertOldSchemaAction implements VolumeAction {
 
 	private static final Logger logger = Logger.getLogger(ConvertOldSchemaAction.class);
 	private CrawlStateProvider crawlStateProvider;
 	private Map<File, String> volumeDirUrlMap;
-	
+
 	@Inject
 	public ConvertOldSchemaAction(
 			CrawlStateProvider crawlStateProvider,
@@ -46,14 +48,14 @@ public class ConvertOldSchemaAction implements VolumeAction {
 		this.volumeDirUrlMap = volumeDirUrlMap;
 		this.crawlStateProvider = crawlStateProvider;
 	}
-	
+
 	@Override
 	public void run(File volumeDir) throws Exception {
 		logger.info("Fix Schema for volume " + volumeDir);
-		
+
 		String volumeUrl = this.volumeDirUrlMap.get(volumeDir);
 		CrawlState crawlState = this.crawlStateProvider.getCrawlState(volumeUrl);
-		
+
 		for(File file : volumeDir.listFiles(new FileFilter() {
 			@Override
 			public boolean accept(File file) {
@@ -61,16 +63,16 @@ public class ConvertOldSchemaAction implements VolumeAction {
 			}
 		})) {
 			fixXmlMalformedIssues(file);
-		    
+
 			SAXBuilder saxBuilder = new SAXBuilder();
 			org.jdom2.Document document;
 			try {
 				document = saxBuilder.build(file);
-				
+
 				XPathFactory xPathFactory = XPathFactory.instance();
-				
-				XPathExpression<Element> sourceMatcher = 
-						xPathFactory.compile("/bio:treatment/meta/source", Filters.element(), 
+
+				XPathExpression<Element> sourceMatcher =
+						xPathFactory.compile("/bio:treatment/meta/source", Filters.element(),
 								null, Namespace.getNamespace("bio", "http://www.github.com/biosemantics"));
 				List<Element> sourceElements = new ArrayList<Element>(sourceMatcher.evaluate(document));
 				for(Element sourceElement : sourceElements) {
@@ -78,7 +80,7 @@ public class ConvertOldSchemaAction implements VolumeAction {
 					Element titleElement = sourceElement.getChild("title");
 					Element dateElement = sourceElement.getChild("date");
 					Element pagesElement = sourceElement.getChild("pages");
-					
+
 					sourceElement.removeChildren("author");
 					sourceElement.removeChildren("title");
 					sourceElement.removeChildren("date");
@@ -97,17 +99,17 @@ public class ConvertOldSchemaAction implements VolumeAction {
 					if(pagesElement != null)
 						sourceElement.addContent(pagesElement);
 				}
-				
-				
-				
-				
-				XPathExpression<Element> numberMatcher = 
-						xPathFactory.compile("/bio:treatment/number", Filters.element(), 
+
+
+
+
+				XPathExpression<Element> numberMatcher =
+						xPathFactory.compile("/bio:treatment/number", Filters.element(),
 								null, Namespace.getNamespace("bio", "http://www.github.com/biosemantics"));
 				List<Element> numberElements = new ArrayList<Element>(numberMatcher.evaluate(document));
-				
-				XPathExpression<Element> taxonNameMatcher = 
-						xPathFactory.compile("/bio:treatment/taxon_identification", Filters.element(), 
+
+				XPathExpression<Element> taxonNameMatcher =
+						xPathFactory.compile("/bio:treatment/taxon_identification", Filters.element(),
 								null, Namespace.getNamespace("bio", "http://www.github.com/biosemantics"));
 				List<Element> taxonIdentificationElements = taxonNameMatcher.evaluate(document);
 				for(Element taxonIdentificationElement : new ArrayList<Element>(taxonIdentificationElements)) {
@@ -135,9 +137,9 @@ public class ConvertOldSchemaAction implements VolumeAction {
 					taxonNameElement.setAttribute("authority", "");
 					taxonIdentificationElement.addContent(taxonNameElement);
 				}
-				
-				XPathExpression<Element> commonNamesMatcher = 
-						xPathFactory.compile("/bio:treatment/common_names", Filters.element(), 
+
+				XPathExpression<Element> commonNamesMatcher =
+						xPathFactory.compile("/bio:treatment/common_names", Filters.element(),
 								null, Namespace.getNamespace("bio", "http://www.github.com/biosemantics"));
 				List<Element> commonNamesElements = commonNamesMatcher.evaluate(document);
 				for(Element commonNamesElement : new ArrayList<Element>(commonNamesElements)) {
@@ -149,42 +151,42 @@ public class ConvertOldSchemaAction implements VolumeAction {
 					taxonNameElement.setAttribute("date", "");
 					taxonNameElement.setText(commonNamesElement.getText());
 					taxonIdentificationElement.addContent(taxonNameElement);
-					
+
 					taxonIdentificationElements = taxonNameMatcher.evaluate(document);
 					Element parent = commonNamesElement.getParentElement();
 					commonNamesElement.detach();
 					parent.addContent(
 							parent.indexOf(
-								taxonIdentificationElements.get(taxonIdentificationElements.size() - 1)) + 1,
-							taxonIdentificationElement);
+									taxonIdentificationElements.get(taxonIdentificationElements.size() - 1)) + 1,
+									taxonIdentificationElement);
 				}
-				
+
 				if(!numberElements.isEmpty() && !taxonIdentificationElements.isEmpty()) {
 					Element parent = numberElements.get(0).getParentElement();
 					for(Element numberElement : numberElements) {
 						numberElement.detach();
-						if(numberElement.getText().isEmpty()) 
+						if(numberElement.getText().isEmpty())
 							numberElement.setText("NA");
 					}
-					
-					
+
+
 					taxonIdentificationElements = taxonNameMatcher.evaluate(document);
 					parent.addContent(parent.indexOf(
-								taxonIdentificationElements.get(taxonIdentificationElements.size() - 1)) + 1, 
-							numberElements);		
+							taxonIdentificationElements.get(taxonIdentificationElements.size() - 1)) + 1,
+							numberElements);
 				}
-				
-				XPathExpression<Element> descriptionMatcher = 
-						xPathFactory.compile("/bio:treatment/description", Filters.element(), 
+
+				XPathExpression<Element> descriptionMatcher =
+						xPathFactory.compile("/bio:treatment/description", Filters.element(),
 								null, Namespace.getNamespace("bio", "http://www.github.com/biosemantics"));
 				List<Element> descriptionElements = descriptionMatcher.evaluate(document);
 				for(Element descriptionElement : new ArrayList<Element>(descriptionElements)) {
 					if(descriptionElement.getText().isEmpty())
 						descriptionElement.setText("empty");
 				}
-				
-				XPathExpression<Element> referenceMatcher = 
-						xPathFactory.compile("/bio:treatment/references", Filters.element(), 
+
+				XPathExpression<Element> referenceMatcher =
+						xPathFactory.compile("/bio:treatment/references", Filters.element(),
 								null, Namespace.getNamespace("bio", "http://www.github.com/biosemantics"));
 				List<Element> referenceElements = referenceMatcher.evaluate(document);
 				for(Element referenceElement : new ArrayList<Element>(referenceElements)) {
@@ -200,7 +202,7 @@ public class ConvertOldSchemaAction implements VolumeAction {
 			}
 		}
 	}
-	
+
 
 	private Element collapseElements(List<Element> collapse, String name) {
 		Element element = new Element(name);
@@ -221,18 +223,18 @@ public class ConvertOldSchemaAction implements VolumeAction {
 			logger.warn("IO Error writing update XML to file", e);
 		}
 	}
-	
+
 	/**
 	 * V24 and V25 are not on eflora!
 	 */
 	private String[] getNameAuthority(String value, CrawlState crawlState) {
-		
+
 		value = normalize(value);
-		for(String url : crawlState.getUrls()) {		
+		for(String url : crawlState.getUrls()) {
 			String name = crawlState.getLinkName(url);
 			String text = crawlState.getLinkText(url);
-			
-			
+
+
 			if(name != null && normalize(name).contains(value)) {
 				logger.info("found contained in name");
 			}
@@ -242,46 +244,46 @@ public class ConvertOldSchemaAction implements VolumeAction {
 		}
 		return new String[] { "a", "b" };
 	}
-	
+
 	private String normalize(String value) {
 		return value.trim().replaceAll("[^a-zA-Z_0-9.<>\\s]", "").replaceAll("\\s+", " ").toLowerCase();
 	}
 
 	private static void fixXmlMalformedIssues(File file) throws IOException {
-	    StringBuffer sb = new StringBuffer();
-	    try(BufferedReader br = new BufferedReader(new FileReader(file))) {
-	    	boolean insideKey = false;
-	    	while(br.ready()) {
-	    		String line = br.readLine();
-	    		
-	    		if(line.contains("<bio:treatment>")) {
-	    			line = line.replaceAll("<bio:treatment>", 
-	    					"<bio:treatment xmlns:bio=\"http://www.github.com/biosemantics\" " +
-	    					"xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " +
-	    					"xsi:schemaLocation=\"http://www.github.com/biosemantics http://www.w3.org/2001/XMLSchema-instance\">");
-	    		}
-	    		
-	    		line = line.replaceAll("&", "&amp;");
-	    		
-	    		line = line.replaceAll("(< 45°)", "(&lt; 45°)");
-	    		
-	    		if(!insideKey && !line.contains("<key>")) {
-	    			sb.append(line + "\n");
-	    		}
-	    		
-	    		if(line.contains("<key>")) {
-	    			insideKey = true;
-	    		}
-	    		if(line.contains("</key>")) {
-	    			insideKey = false;
-	    		}
-	    	}
-	    }
-	    try(OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8)) {
-	    	writer.write(sb.toString());
-	    }
+		StringBuffer sb = new StringBuffer();
+		try(BufferedReader br = new BufferedReader(new FileReader(file))) {
+			boolean insideKey = false;
+			while(br.ready()) {
+				String line = br.readLine();
+
+				if(line.contains("<bio:treatment>")) {
+					line = line.replaceAll("<bio:treatment>",
+							"<bio:treatment xmlns:bio=\"http://www.github.com/biosemantics\" " +
+									"xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " +
+							"xsi:schemaLocation=\"http://www.github.com/biosemantics http://www.w3.org/2001/XMLSchema-instance\">");
+				}
+
+				line = line.replaceAll("&", "&amp;");
+
+				line = line.replaceAll("(< 45°)", "(&lt; 45°)");
+
+				if(!insideKey && !line.contains("<key>")) {
+					sb.append(line + "\n");
+				}
+
+				if(line.contains("<key>")) {
+					insideKey = true;
+				}
+				if(line.contains("</key>")) {
+					insideKey = false;
+				}
+			}
+		}
+		try(OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8)) {
+			writer.write(sb.toString());
+		}
 	}
-	
+
 	public static void main(String[] args) throws Exception {
 		File file = new File("C:\\Users\\rodenhausen.CATNET\\git2018\\FNATextProcessing\\V24\\1.xml");
 		fixXmlMalformedIssues(file);

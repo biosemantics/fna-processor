@@ -3,6 +3,7 @@ package edu.arizona.biosemantics.fnaprocessor.action.parenthesis;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,8 +24,13 @@ import com.google.inject.Inject;
 
 import edu.arizona.biosemantics.fnaprocessor.action.VolumeAction;
 
+/**
+ * ParenthesisAction reports unclosed parenthesis validations inside the description elements
+ * of the volume's files. A report on unclosed parenthesis is stored in
+ * {volumeDir}/{filename}-unclosed-parenthesis.txt
+ */
 public class ParenthesisAction implements VolumeAction {
-	
+
 	private static final Logger logger = Logger.getLogger(ParenthesisAction.class);
 
 	private BracketValidator bracketValidator;
@@ -33,12 +39,12 @@ public class ParenthesisAction implements VolumeAction {
 	public ParenthesisAction(BracketValidator bracketValidator) {
 		this.bracketValidator = bracketValidator;
 	}
-	
+
 	@Override
 	public void run(File volumeDir) throws Exception {
 		XMLOutputter outputter = new XMLOutputter();
 		outputter.setFormat(Format.getPrettyFormat());
-		
+
 		for(File file : volumeDir.listFiles(new FileFilter() {
 			@Override
 			public boolean accept(File file) {
@@ -50,12 +56,20 @@ public class ParenthesisAction implements VolumeAction {
 				if(!bracketValidator.validate(description.getText())) {
 					StringWriter stringWriter = new StringWriter();
 					outputter.output(description, stringWriter);
-					
-					logger.error("Parenthesis missing in file: " + file.getName() + 
+
+					try(PrintWriter out = new PrintWriter(
+							new File(volumeDir, file.getName().replaceAll(".xml", "") + "-unclosed-parenthesis.txt"))) {
+						out.println("Parenthesis missing in file: " + file.getName() +
+								"Description element Number " + descriptions.indexOf(description));
+						out.println("Content: " + stringWriter.toString());
+						out.println("Missing parenthesis candidates: " + bracketValidator.getBracketCountDifferences(description.getText()));
+					}
+
+					logger.error("Parenthesis missing in file: " + file.getName() +
 							"Description element Number " + descriptions.indexOf(description));
 					logger.error("Content: " + stringWriter.toString());
 					logger.error("Missing parenthesis candidates: " + bracketValidator.getBracketCountDifferences(description.getText()));
-					
+
 				}
 			}
 		}
@@ -71,8 +85,8 @@ public class ParenthesisAction implements VolumeAction {
 			return new ArrayList<Element>();
 		}
 		XPathFactory xPathFactory = XPathFactory.instance();
-		XPathExpression<Element> descriptionsMatcher = 
-				xPathFactory.compile("//description", Filters.element(), 
+		XPathExpression<Element> descriptionsMatcher =
+				xPathFactory.compile("//description", Filters.element(),
 						null, Namespace.getNamespace("bio", "http://www.github.com/biosemantics"));
 		return descriptionsMatcher.evaluate(document);
 	}

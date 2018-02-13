@@ -18,29 +18,34 @@ import edu.arizona.biosemantics.fnaprocessor.eflorascrawler.CrawlStateProvider;
 import edu.arizona.biosemantics.fnaprocessor.eflorasmapper.MapState;
 import edu.arizona.biosemantics.fnaprocessor.eflorasmapper.MapStateProvider;
 
+/**
+ * PrintLocationAction outputs the location of the taxon in the print publication as
+ * retrieved from the mapped eflora document. The print location is stored in
+ * {volumeDir}/{filename}-print-location.txt
+ */
 public class PrintLocationAction implements VolumeAction {
 
 	private final static Logger logger = Logger.getLogger(PrintLocationAction.class);
-	
+
 	private MapStateProvider mapStateProvider;
 	private CrawlStateProvider crawlStateProvider;
 	private Map<File, String> volumeDirUrlMap;
 
 	@Inject
-	public PrintLocationAction(CrawlStateProvider crawlStateProvider, 
+	public PrintLocationAction(CrawlStateProvider crawlStateProvider,
 			@Named("serializedMapStateProvider") MapStateProvider mapStateProvider,
 			@Named("volumeDirUrlMap") Map<File, String> volumeDirUrlMap) {
 		this.mapStateProvider = mapStateProvider;
 		this.crawlStateProvider = crawlStateProvider;
 		this.volumeDirUrlMap = volumeDirUrlMap;
 	}
-	
+
 	@Override
 	public void run(File volumeDir) throws Exception {
 		logger.info("Running PrintLocationAction for " + volumeDir);
 		MapState mapState = mapStateProvider.getMapState(volumeDir, new MapState(volumeDirUrlMap.get(volumeDir)));
 		CrawlState crawlState = crawlStateProvider.getCrawlState(volumeDirUrlMap.get(volumeDir));
-		
+
 		for(File file : volumeDir.listFiles(new FileFilter() {
 			@Override
 			public boolean accept(File file) {
@@ -56,7 +61,7 @@ public class PrintLocationAction implements VolumeAction {
 					String printLocation = locationElement.html();
 					try(PrintWriter out = new PrintWriter(
 							new File(volumeDir, file.getName().replaceAll(".xml", "") + "-print-location.txt"))) {
-					    out.println(printLocation);
+						out.println(printLocation);
 					}
 				} else {
 					logger.warn("Did not find print location for file " + file);

@@ -25,36 +25,54 @@ import edu.arizona.biosemantics.fnaprocessor.eflorascrawler.documentretrieval.Cr
 import edu.arizona.biosemantics.fnaprocessor.eflorasmapper.MapState;
 import edu.arizona.biosemantics.fnaprocessor.eflorasmapper.MapStateProvider;
 
+/**
+ * DistributionMapAction retrieves the distribution map (if available) from the eflora document mapped to the
+ * files stored in the volume directory and stores it at {volumeDir}/{filename}-distribution-map.
+ */
 public class DistributionMapAction implements VolumeAction {
 
 	private static Logger logger = Logger.getLogger(DistributionMapAction.class);
+
 	private HrefResolver hrefResolver;
 	private MapStateProvider mapStateProvider;
 	private Map<File, String> volumeDirUrlMap;
 	private CrawlStateProvider crawlStateProvider;
 
+	/**
+	 * @param crawlStateProvider to use to retrieve crawled eflora documents
+	 * @param mapStateProvider to find the eflora documents mapped to a volume file
+	 * @param hrefResolver to use to follow eflora hyperlinks
+	 * @param volumeDirUrlMap to find the eflora volume url for a given volume dir
+	 */
 	@Inject
-	public DistributionMapAction(CrawlStateProvider crawlStateProvider, 
+	public DistributionMapAction(CrawlStateProvider crawlStateProvider,
 			@Named("serializedMapStateProvider") MapStateProvider mapStateProvider,
-			HrefResolver hrefResolver, 
+			HrefResolver hrefResolver,
 			@Named("volumeDirUrlMap") Map<File, String> volumeDirUrlMap) {
 		this.mapStateProvider = mapStateProvider;
 		this.crawlStateProvider = crawlStateProvider;
 		this.hrefResolver = hrefResolver;
 		this.volumeDirUrlMap = volumeDirUrlMap;
 	}
-	
+
+	/**
+	 * Extracts the distribution map image from the given url utilizing the provided crawlState (@see CrawlState)
+	 * @param url: the eflora document for which to extract the distribution map
+	 * @param crawlState: the crawlState to utilize to retrieve eflora documents
+	 * @return List<String>: a list of urls with distribution maps found
+	 * @throws Exception if a eflora document could not be retrieved
+	 */
 	private List<String> extractDistributionMappingImage(String url, CrawlState crawlState) throws Exception {
 		String baseUrl = hrefResolver.getBaseUrl(url);
 		Document document = crawlState.getUrlDocumentMapping(url);
 		List<String> result = new ArrayList<String>();
-		
-		CrawlStateBasedDocumentRetriever crawlStateBasedDocumentRetriever = 
+
+		CrawlStateBasedDocumentRetriever crawlStateBasedDocumentRetriever =
 				new CrawlStateBasedDocumentRetriever(crawlState);
 		for(Element element : document.select("#lblObjectList a")) {
 			if(element.ownText().trim().equalsIgnoreCase("Distribution Map")) {
 				Document distributionDocument = crawlStateBasedDocumentRetriever.getDocument(hrefResolver.getHref(baseUrl, element));
-				
+
 				Elements imageElements = distributionDocument.select("#panelContent img");
 				for(Element imageElement : imageElements)
 					result.add(imageElement.attr("src"));
@@ -63,6 +81,9 @@ public class DistributionMapAction implements VolumeAction {
 		return result;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void run(File volumeDir) throws Exception {
 		logger.info("Running DistributionMapAction for " + volumeDir);
@@ -80,9 +101,9 @@ public class DistributionMapAction implements VolumeAction {
 
 				if(foundImages.isEmpty())
 					logger.warn("Did not find distribution map for file " + file);
-				else 
+				else
 					logger.trace("Found a distribution ma for file " + file);
-				
+
 				for(String imageUrl : foundImages) {
 					//Open a URL Stream
 					Response resultImageResponse = null;
@@ -93,11 +114,11 @@ public class DistributionMapAction implements VolumeAction {
 					}
 					if(resultImageResponse != null) {
 						try(FileOutputStream out = (new FileOutputStream(
-								new java.io.File(file.getParentFile(), file.getName().replaceAll(".xml", "") + "-distributionmap" + imageUrl.substring(imageUrl.lastIndexOf(".")))))) {
+								new java.io.File(file.getParentFile(), file.getName().replaceAll(".xml", "") + "-distribution-map" + imageUrl.substring(imageUrl.lastIndexOf(".")))))) {
 							out.write(resultImageResponse.bodyAsBytes());
 						}
 					}
-				}				
+				}
 			} else {
 				logger.error("Missing file to document mapping for file " + file);
 			}

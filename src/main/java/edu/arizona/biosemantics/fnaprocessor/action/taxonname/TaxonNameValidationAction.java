@@ -8,16 +8,19 @@ import org.apache.log4j.Logger;
 
 import edu.arizona.biosemantics.fnaprocessor.action.VolumeAction;
 
+/**
+ * TaxonNameValidationAction finds duplicate taxon concepts in a volume directory and reports it
+ * in a file at {volumeDir}/invalid-taxon-names.txt
+ */
 public class TaxonNameValidationAction implements VolumeAction {
 
 	private static final Logger logger = Logger.getLogger(TaxonNameValidationAction.class);
-	
+
 	@Override
 	public void run(File volumeDir) throws Exception {
 		logger.info("Validating taxon names for " + volumeDir.getAbsolutePath());
-		StringBuilder report = new StringBuilder();
-		
-		TaxonNameValidator validator = new TaxonNameValidator();	
+
+		TaxonNameValidator validator = new TaxonNameValidator();
 		boolean valid = validator.validate(volumeDir.listFiles(new FileFilter() {
 			@Override
 			public boolean accept(File file) {
@@ -27,7 +30,7 @@ public class TaxonNameValidationAction implements VolumeAction {
 		if(!valid) {
 			try(PrintWriter out = new PrintWriter(
 					new File(volumeDir, "invalid-taxon-names.txt"))) {
-			    out.println(validator.getInvalidMessage());
+				out.println(validator.getInvalidMessage());
 			}
 			logger.error(validator.getInvalidMessage());
 		}

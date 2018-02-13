@@ -18,7 +18,7 @@ public class BaseConfig extends AbstractModule {
 
 	@Override
 	protected void configure() {
-		File crawlStateDir = new File("crawlState");
+		File crawlStateDir = new File("crawlState2");
 		crawlStateDir.mkdirs();
 		bind(File.class).annotatedWith(Names.named("serializedCrawlStateDir"))
 			.toInstance(crawlStateDir);		
@@ -28,7 +28,7 @@ public class BaseConfig extends AbstractModule {
 		mapStateDir.mkdirs();
 		bind(File.class).annotatedWith(Names.named("serializedMapStateDir"))
 			.toInstance(mapStateDir);
-		bind(MapStateProvider.class).annotatedWith(Names.named("serializedMapStateProvider")).to(SerializedMapStateProvider.class);
+		//bind(MapStateProvider.class).annotatedWith(Names.named("serializedMapStateProvider")).to(SerializedMapStateProvider.class);
 		
 		bind(CrawlStateStorer.class).to(SerializedCrawlStateStorer.class);
 		bind(MapStateStorer.class).to(SerializedMapStateStorer.class);

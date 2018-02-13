@@ -33,7 +33,9 @@ public class Config extends BaseConfig {
 		Map<String, File> volumeUrlDirMap = new LinkedHashMap<String, File>();
 		
 		int[] volumes = new int[] {
-			2//3,//2,4,5,6,7,8,9,19,22,23,26,27,28
+			//6, 7, 8, 9
+			19,22,23,26,27,28
+				//4,5,6,7,8,9,19,22,23,26,27,28//2//3,//2,4,5,6,7,8,9,19,22,23,26,27,28
 			//2,3,4,5,6,8,9,
 			//7 is slow
 			//19, //this one is slow as it contains 19,20,21: Don't use synonym name matching for this as slow too many synonyms
