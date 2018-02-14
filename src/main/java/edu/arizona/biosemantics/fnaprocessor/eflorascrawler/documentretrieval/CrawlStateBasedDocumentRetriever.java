@@ -10,18 +10,28 @@ import com.google.inject.Inject;
 
 import edu.arizona.biosemantics.fnaprocessor.eflorascrawler.CrawlState;
 
+/**
+ * Retrieves eflora documents by utilizing a CrawlState as known documents source
+ * Only falls back to retrieving them online if the document is not available in the CrawlState
+ */
 public class CrawlStateBasedDocumentRetriever implements DocumentRetriever {
-	
+
 	private static Logger logger = Logger.getLogger(CrawlStateBasedDocumentRetriever.class);
 	private static int MAX_TRY = 10;
-	
+
 	private CrawlState crawlState;
 
+	/**
+	 * @param crawlState: The CrawlState to use as known document source
+	 */
 	@Inject
 	public CrawlStateBasedDocumentRetriever(CrawlState crawlState) {
 		this.crawlState = crawlState;
 	}
-	
+
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Document getDocument(String url) throws IOException, Exception {
 		logger.trace("request: " + url);
