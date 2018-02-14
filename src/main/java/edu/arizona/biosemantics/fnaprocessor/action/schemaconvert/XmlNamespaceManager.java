@@ -14,11 +14,19 @@ import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 
+/**
+ * Manages the namespace of an XML file
+ */
 public class XmlNamespaceManager {
 
 	private Namespace bioNamespace = Namespace.getNamespace("bio", "http://www.github.com/biosemantics");
 	private Namespace xsiNamespace = Namespace.getNamespace("xsi", "http://www.w3.org/2001/XMLSchema-instance");
-	
+
+	/**
+	 * Returns the schema in the file
+	 * @param file: The XML file
+	 * @return schema: The schema
+	 */
 	public String getSchema(File file) {
 		Document doc = null;
 		try {
@@ -31,12 +39,22 @@ public class XmlNamespaceManager {
 			return getSchema(doc);
 		return null;
 	}
-	
+
+	/**
+	 * Returns the schema in the doc
+	 * @param doc: The XML document
+	 * @return schema: The schema
+	 */
 	private String getSchema(Document doc) {
 		Element rootElement = doc.getRootElement();
 		return rootElement.getAttributeValue("schemaLocation", xsiNamespace).replace("http://www.github.com/biosemantics", "").trim();
 	}
-	
+
+	/**
+	 * Returns the schame in the fileContent
+	 * @param fileContent
+	 * @return schema
+	 */
 	public String getSchema(String fileContent) {
 		try (StringReader reader = new StringReader(fileContent)) {
 			SAXBuilder sax = new SAXBuilder();
@@ -47,7 +65,11 @@ public class XmlNamespaceManager {
 		}
 		return null;
 	}
-	
+
+	/**
+	 * Sets the schema for the file
+	 * @param file: The XML file
+	 */
 	public void setXmlSchema(File file) {
 		Document doc = null;
 		try {
@@ -56,7 +78,7 @@ public class XmlNamespaceManager {
 		} catch (JDOMException | IOException e) {
 			e.printStackTrace();
 		}
-		if(doc != null) { 
+		if(doc != null) {
 			setXmlSchema(doc);
 			try(FileOutputStream fileOutputStream = new FileOutputStream(file)) {
 				try {
@@ -71,6 +93,10 @@ public class XmlNamespaceManager {
 		}
 	}
 
+	/**
+	 * Sets the schema for the doc
+	 * @param doc: The XML document
+	 */
 	public void setXmlSchema(Document doc) {
 		String schemaUrl = "https://raw.githubusercontent.com/biosemantics/schemas/master/semanticMarkupInput.xsd";
 		Element rootElement = doc.getRootElement();
@@ -80,6 +106,11 @@ public class XmlNamespaceManager {
 		rootElement.setAttribute("schemaLocation", "http://www.github.com/biosemantics " + schemaUrl, xsiNamespace);
 	}
 
+
+	/**
+	 * Sets the schema for the content
+	 * @param content: The xml content
+	 */
 	public String setXmlSchema(String content) {
 		try(StringReader reader = new StringReader(content)) {
 			Document doc = null;
@@ -91,7 +122,7 @@ public class XmlNamespaceManager {
 			}
 			if(doc != null) {
 				setXmlSchema(doc);
-				
+
 				try(StringWriter stringWriter = new StringWriter()) {
 					try {
 						XMLOutputter xmlOutputter = new XMLOutputter(Format.getPrettyFormat());
@@ -109,7 +140,11 @@ public class XmlNamespaceManager {
 		}
 		return null;
 	}
-	
+
+	/**
+	 * Removes the schema from the XML file
+	 * @param file: The XML file
+	 */
 	public void removeXmlSchema(File file) {
 		Document doc = null;
 		try {
@@ -136,5 +171,5 @@ public class XmlNamespaceManager {
 				e.printStackTrace();
 			}
 		}
-	}	
+	}
 }

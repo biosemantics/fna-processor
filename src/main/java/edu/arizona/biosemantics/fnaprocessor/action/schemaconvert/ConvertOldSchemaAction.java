@@ -41,6 +41,10 @@ public class ConvertOldSchemaAction implements VolumeAction {
 	private CrawlStateProvider crawlStateProvider;
 	private Map<File, String> volumeDirUrlMap;
 
+	/**
+	 * @param crawlStateProvider to use to retrieve crawled eflora documents
+	 * @param volumeDirUrlMap to find the eflora volume url for a given volume dir
+	 */
 	@Inject
 	public ConvertOldSchemaAction(
 			CrawlStateProvider crawlStateProvider,
@@ -49,6 +53,9 @@ public class ConvertOldSchemaAction implements VolumeAction {
 		this.crawlStateProvider = crawlStateProvider;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void run(File volumeDir) throws Exception {
 		logger.info("Fix Schema for volume " + volumeDir);
@@ -203,7 +210,12 @@ public class ConvertOldSchemaAction implements VolumeAction {
 		}
 	}
 
-
+	/**
+	 *
+	 * @param collapse
+	 * @param name
+	 * @return
+	 */
 	private Element collapseElements(List<Element> collapse, String name) {
 		Element element = new Element(name);
 		String value = "";
@@ -214,6 +226,11 @@ public class ConvertOldSchemaAction implements VolumeAction {
 		return element;
 	}
 
+	/**
+	 *
+	 * @param document
+	 * @param file
+	 */
 	private void writeToFile(org.jdom2.Document document, File file) {
 		try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8))) {
 			XMLOutputter outputter = new XMLOutputter();
@@ -226,6 +243,8 @@ public class ConvertOldSchemaAction implements VolumeAction {
 
 	/**
 	 * V24 and V25 are not on eflora!
+	 * @param value
+	 * @param crawlState
 	 */
 	private String[] getNameAuthority(String value, CrawlState crawlState) {
 
@@ -245,10 +264,19 @@ public class ConvertOldSchemaAction implements VolumeAction {
 		return new String[] { "a", "b" };
 	}
 
+	/**
+	 * @param value
+	 * @return
+	 */
 	private String normalize(String value) {
 		return value.trim().replaceAll("[^a-zA-Z_0-9.<>\\s]", "").replaceAll("\\s+", " ").toLowerCase();
 	}
 
+	/**
+	 *
+	 * @param file
+	 * @throws IOException
+	 */
 	private static void fixXmlMalformedIssues(File file) throws IOException {
 		StringBuffer sb = new StringBuffer();
 		try(BufferedReader br = new BufferedReader(new FileReader(file))) {

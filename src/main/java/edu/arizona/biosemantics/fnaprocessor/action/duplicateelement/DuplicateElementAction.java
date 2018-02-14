@@ -60,7 +60,7 @@ public class DuplicateElementAction implements VolumeAction {
 	/**
 	 * Finds duplicate elements within a parent
 	 * @param parent: node for which to check the children for duplicates
-	 * @return Set<String> containing element that were duplicated
+	 * @return set containing element that were duplicated
 	 */
 	private Set<String> findDuplicates(Element parent) {
 		Set<String> duplicates = new HashSet<String>();

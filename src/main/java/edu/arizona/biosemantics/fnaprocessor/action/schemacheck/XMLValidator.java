@@ -35,14 +35,27 @@ public class XMLValidator {
 	private URL url;
 	private String invalidMessage = "";
 
+	/**
+	 * Creates an XML validator using the schemafile
+	 * @param schemaFile that contains the XML schema
+	 */
 	public XMLValidator(File schemaFile) {
 		this.schemaFile = schemaFile;
 	}
 
+	/**
+	 * Creates an XML validator using the schema at the url
+	 * @param url: The url where to find the schema
+	 */
 	public XMLValidator(URL url) {
 		this.url = url;
 	}
 
+	/**
+	 * Validates the input string against the xml schema
+	 * @param input
+	 * @return if the input is valid
+	 */
 	public boolean validate(String input) {
 		Source schemaSource = null;
 		if(schemaFile != null) {
@@ -62,6 +75,12 @@ public class XMLValidator {
 		return false;
 	}
 
+	/**
+	 * Validates the input against the schemaSource
+	 * @param input: the input text
+	 * @param schemaSource: The source of the schema
+	 * @return if the input is valid against the schema
+	 */
 	private boolean validate(String input, Source schemaSource) {
 		if(schemaSource != null) {
 			SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
@@ -128,6 +147,9 @@ public class XMLValidator {
 		}
 	}
 
+	/**
+	 * @return the invalidMessage create from the latest validation
+	 */
 	public String getInvalidMessage() {
 		return invalidMessage;
 	}

@@ -33,6 +33,9 @@ public class DistributionMapAction implements VolumeAction {
 
 	private static Logger logger = Logger.getLogger(DistributionMapAction.class);
 
+	/**
+	 * The href resolver
+	 */
 	private HrefResolver hrefResolver;
 	private MapStateProvider mapStateProvider;
 	private Map<File, String> volumeDirUrlMap;
@@ -59,7 +62,7 @@ public class DistributionMapAction implements VolumeAction {
 	 * Extracts the distribution map image from the given url utilizing the provided crawlState (@see CrawlState)
 	 * @param url: the eflora document for which to extract the distribution map
 	 * @param crawlState: the crawlState to utilize to retrieve eflora documents
-	 * @return List<String>: a list of urls with distribution maps found
+	 * @return a list of urls with distribution maps found
 	 * @throws Exception if a eflora document could not be retrieved
 	 */
 	private List<String> extractDistributionMappingImage(String url, CrawlState crawlState) throws Exception {

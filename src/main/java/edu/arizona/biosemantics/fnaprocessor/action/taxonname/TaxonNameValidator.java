@@ -16,16 +16,24 @@ import org.jdom2.input.SAXBuilder;
 import org.jdom2.xpath.XPathExpression;
 import org.jdom2.xpath.XPathFactory;
 
+/**
+ * Validates a set of Charaparser input files for duplicate taxon concepts
+ */
 public class TaxonNameValidator {
-	
+
 	private static Logger logger = Logger.getLogger(TaxonNameValidator.class);
-	
+
 	private String invalidMessage;
 
 	public TaxonNameValidator() {
 		invalidMessage = "";
 	}
-	
+
+	/**
+	 * Validates the files for duplicate taxon concepts
+	 * @param files: The files to consider for validation of duplicates
+	 * @return if there are duplicates
+	 */
 	public boolean validate(File[] files) {
 		HashMap<String, String> taxonNames = new HashMap<String, String>();
 		String taxonNameErrors = "";
@@ -41,10 +49,10 @@ public class TaxonNameValidator {
 					return false;
 				}
 				XPathFactory xPathFactory = XPathFactory.instance();
-				XPathExpression<Element> taxonNameMatcher = 
-						xPathFactory.compile("/bio:treatment/taxon_identification", Filters.element(), 
+				XPathExpression<Element> taxonNameMatcher =
+						xPathFactory.compile("/bio:treatment/taxon_identification", Filters.element(),
 								null, Namespace.getNamespace("bio", "http://www.github.com/biosemantics"));
-				List<Element> taxonIdentificationElements = taxonNameMatcher.evaluate(document);				
+				List<Element> taxonIdentificationElements = taxonNameMatcher.evaluate(document);
 				List<Element> taxonNameElements = new LinkedList<Element>();
 				List<Element> strainNumberElements = new LinkedList<Element>();
 				for(Element taxonIdentificationElement : taxonIdentificationElements) {
@@ -55,7 +63,7 @@ public class TaxonNameValidator {
 				}
 				String taxon = "";
 				for(Element taxonName : taxonNameElements) {
-					taxon += taxonName.getAttributeValue("rank") + "_" + taxonName.getText() + "_" + 
+					taxon += taxonName.getAttributeValue("rank") + "_" + taxonName.getText() + "_" +
 							taxonName.getAttributeValue("authority") + "_" + taxonName.getAttributeValue("date");
 				}
 				for(Element strainNumber : strainNumberElements) {
@@ -77,11 +85,12 @@ public class TaxonNameValidator {
 		return true;
 	}
 
-	
+	/**
+	 * @return the invalidMessage of the latest validation containing information about which files contain
+	 * duplicate taxon concepts
+	 */
 	public String getInvalidMessage() {
 		return invalidMessage;
 	}
-	
-	
 
 }

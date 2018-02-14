@@ -17,6 +17,9 @@ public class SchemaCheckAction implements VolumeAction {
 
 	private static final Logger logger = Logger.getLogger(SchemaCheckAction.class);
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void run(File volumeDir) throws Exception {
 		logger.info("Check schema for volume " + volumeDir);

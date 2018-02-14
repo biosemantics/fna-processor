@@ -102,7 +102,7 @@ public class KeyAction implements VolumeAction {
 	 * Creates the key elements from the eflora document and url provided
 	 * @param url: from which to create the keys
 	 * @param efloraDocument: from which to extract the keys
-	 * @return List<org.jdom2.Element>: list of elements that contain the extracted keys
+	 * @return list of elements that contain the extracted keys
 	 * @throws IOException if there was a problem extracting the keys from the eflora document
 	 */
 	private List<org.jdom2.Element> createKeyElements(String url, Document efloraDocument) throws IOException {
@@ -178,13 +178,13 @@ public class KeyAction implements VolumeAction {
 	 * @return an element containing the extracted key
 	 * @throws IOException if there was a problem extracting the key
 	 */
-	private org.jdom2.Element createKeyElement(Document doc) throws IOException {
+	private org.jdom2.Element createKeyElement(Document document) throws IOException {
 		//System.out.println(doc.toString());
 		org.jdom2.Element result = new org.jdom2.Element("key");
-		Element tableKeyElement = doc.selectFirst("#tableKey");
+		Element tableKeyElement = document.selectFirst("#tableKey");
 		if(tableKeyElement == null)
 			return null;
-		Element tableKeyTitleElement = doc.selectFirst("#lblKeyTitle");
+		Element tableKeyTitleElement = document.selectFirst("#lblKeyTitle");
 		if(tableKeyTitleElement != null) {
 			String title = tableKeyTitleElement.text().trim();
 			if(title.isEmpty())

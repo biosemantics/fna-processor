@@ -31,6 +31,12 @@ public class PrintLocationAction implements VolumeAction {
 	private CrawlStateProvider crawlStateProvider;
 	private Map<File, String> volumeDirUrlMap;
 
+
+	/**
+	 * @param crawlStateProvider to use to retrieve crawled eflora documents
+	 * @param mapStateProvider to find the eflora documents mapped to a volume file
+	 * @param volumeDirUrlMap to find the eflora volume url for a given volume dir
+	 */
 	@Inject
 	public PrintLocationAction(CrawlStateProvider crawlStateProvider,
 			@Named("serializedMapStateProvider") MapStateProvider mapStateProvider,
@@ -40,6 +46,9 @@ public class PrintLocationAction implements VolumeAction {
 		this.volumeDirUrlMap = volumeDirUrlMap;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void run(File volumeDir) throws Exception {
 		logger.info("Running PrintLocationAction for " + volumeDir);

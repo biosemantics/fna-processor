@@ -34,6 +34,16 @@ public class BracketValidator {
 		brackets.put('}', '{');
 	}
 
+	/**
+	 * Returns a map with the bracket count differences
+	 * e.g. if text is "... (...[...]...." the map will contain
+	 * ( = -1
+	 * ) = 1
+	 * [ = 0
+	 * ] = 0
+	 * @param text
+	 * @return the bracket count differences
+	 */
 	public Map<Character, Integer> getBracketCountDifferences(String text) {
 		Map<Character, Integer> result = new LinkedHashMap<Character, Integer>();
 		for(Character character : brackets.keySet()) {
@@ -68,6 +78,11 @@ public class BracketValidator {
 		return result;
 	}
 
+	/**
+	 * Returns if the text is valid, i.e. if it does not contains any unmatched brackets.
+	 * @param text
+	 * @return if the text does not contain unmatched brackets.
+	 */
 	public boolean validate(String text) {
 		Map<Character, Integer> openingBracketCounts = new HashMap<Character, Integer>();
 		for(Character character : openingBrackets) {

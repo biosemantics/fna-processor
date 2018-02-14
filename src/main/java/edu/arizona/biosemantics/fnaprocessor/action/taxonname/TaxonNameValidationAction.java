@@ -16,6 +16,9 @@ public class TaxonNameValidationAction implements VolumeAction {
 
 	private static final Logger logger = Logger.getLogger(TaxonNameValidationAction.class);
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void run(File volumeDir) throws Exception {
 		logger.info("Validating taxon names for " + volumeDir.getAbsolutePath());

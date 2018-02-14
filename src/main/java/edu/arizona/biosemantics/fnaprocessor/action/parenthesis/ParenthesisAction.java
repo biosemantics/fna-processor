@@ -35,11 +35,17 @@ public class ParenthesisAction implements VolumeAction {
 
 	private BracketValidator bracketValidator;
 
+	/**
+	 * @param bracketValidator: The bracket validator to use
+	 */
 	@Inject
 	public ParenthesisAction(BracketValidator bracketValidator) {
 		this.bracketValidator = bracketValidator;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void run(File volumeDir) throws Exception {
 		XMLOutputter outputter = new XMLOutputter();
@@ -75,6 +81,11 @@ public class ParenthesisAction implements VolumeAction {
 		}
 	}
 
+	/**
+	 * Gets all descriptions of the file
+	 * @param file: the file to get the descriptions from
+	 * @return the list of description elements
+	 */
 	private List<Element> getDescriptions(File file) {
 		SAXBuilder saxBuilder = new SAXBuilder();
 		Document document;
