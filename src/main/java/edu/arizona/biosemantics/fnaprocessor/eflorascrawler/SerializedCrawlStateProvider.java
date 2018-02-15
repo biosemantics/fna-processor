@@ -21,7 +21,6 @@ public class SerializedCrawlStateProvider implements CrawlStateProvider {
 	private Map<String, String> volumeUrlNameMap;
 
 	/**
-	 *
 	 * @param crawlStateDir: The directory where to serialize the crawl states from
 	 * @param volumeUrlNameMap to find the volume name for a given volume url
 	 */
