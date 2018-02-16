@@ -141,7 +141,7 @@ public class KnownCsvWriter {
 	 * @param f: The file to extract the name from
 	 * @return the accepted name
 	 * @throws JDOMException if there was a problem parsing the XML file
-	 * @throws IOException: if there was a probelm accessing the file
+	 * @throws IOException if there was a problem accessing the file
 	 */
 	private static String extractName(File f) throws JDOMException, IOException {
 		SAXBuilder builder = new SAXBuilder();

@@ -14,7 +14,7 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
 /**
- * Reads a CSV format capturing file to eflora url mapping into a Map<String, File>
+ * Reads a CSV format capturing file to eflora url mapping into a map
  */
 public class KnownCsvReader {
 
