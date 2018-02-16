@@ -17,29 +17,36 @@ import org.jdom2.xpath.XPathFactory;
 import edu.arizona.biosemantics.common.taxonomy.Rank;
 import edu.arizona.biosemantics.fnaprocessor.taxonname.Normalizer;
 
+/**
+ * Extracts name candidates by using a conventional approach and considering accepted name elements only
+ */
 public class AcceptedNameExtractor extends AbstractNameExtractor {
 
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	protected LinkedHashMap<String, Set<String>> createRankNameOptions(Document document) {
 		XPathFactory xFactory = XPathFactory.instance();
 		XPathExpression<Element> acceptedNameExpression =
 				xFactory.compile("//taxon_identification[@status='ACCEPTED']/taxon_name", Filters.element());
-		
+
 		List<Element> acceptedNameElements = new ArrayList<Element>(acceptedNameExpression.evaluate(document));
 		Comparator<Element> rankComparator = new Comparator<Element>() {
 			@Override
 			public int compare(Element o1, Element o2) {
-				return Rank.valueOf(o1.getAttribute("rank").getValue().trim().toUpperCase()).getId() - 
+				return Rank.valueOf(o1.getAttribute("rank").getValue().trim().toUpperCase()).getId() -
 						Rank.valueOf(o2.getAttribute("rank").getValue().trim().toUpperCase()).getId();
-			}	
+			}
 		};
 		acceptedNameElements.sort(rankComparator);
-		
+
 		LinkedHashMap<String, Set<String>> rankNameOptions = new LinkedHashMap<String, Set<String>>();
-		
-		
+
+
 		/**
 		 * to apply the <genus specis> is atomic name rule remove species and stuff it into genus element
-		 * 
+		 *
 		 */
 		//cannot do this rule: there is still possibility of subgenus and superspecies etc. ranks.
 		//Or do they never exist in FNA?
@@ -58,12 +65,12 @@ public class AcceptedNameExtractor extends AbstractNameExtractor {
 			acceptedNameElements.remove(speciesElement);
 			genusElement.setText(genusElement.getValue() + speciesElement.getValue());
 		}*/
-		
+
 		for(Element acceptedNameElement : acceptedNameElements) {
 			String rank = Normalizer.normalize(acceptedNameElement.getAttributeValue("rank"));
 			rankNameOptions.put(rank, new HashSet<String>(Arrays.asList(Normalizer.normalize(acceptedNameElement.getValue()))));
 		}
 		return rankNameOptions;
 	}
-	
+
 }

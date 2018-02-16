@@ -15,25 +15,36 @@ import org.jdom2.xpath.XPathFactory;
 
 import edu.arizona.biosemantics.fnaprocessor.taxonname.Normalizer;
 
+/**
+ * Extracts name candidates by using a conventional approach and considering accepted name elements only
+ */
 public class AcceptedNameExtractor extends AbstractNameExtractor {
 
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	protected List<LinkedHashMap<String, Set<String>>> createNameOptions(Document document) {
 		List<LinkedHashMap<String, Set<String>>> list = new ArrayList<>();
 		XPathFactory xFactory = XPathFactory.instance();
 		XPathExpression<Element> acceptedNameExpression =
 				xFactory.compile("//taxon_identification[@status='ACCEPTED']", Filters.element());
-		
+
 		List<Element> acceptedNameElements = new ArrayList<Element>(acceptedNameExpression.evaluate(document));
-		
+
 		this.addNameOptions(acceptedNameElements, list);
 		return list;
 	}
 
+	/**
+	 * @param nameElements to add to the list
+	 * @param result, the resulting list of options of rank names
+	 */
 	private void addNameOptions(List<Element> nameElements, List<LinkedHashMap<String, Set<String>>> result) {
 		for(Element nameElement : nameElements) {
 			List<Element> rankElements = new ArrayList<Element>(nameElement.getChildren("taxon_name"));
 			rankElements.sort(rankComparator);
-			
+
 			LinkedHashMap<String, Set<String>> rankNameOptions = new LinkedHashMap<String, Set<String>>();
 			for(Element rankElement : rankElements) {
 				String rank = Normalizer.normalize(rankElement.getAttributeValue("rank"));
@@ -42,5 +53,5 @@ public class AcceptedNameExtractor extends AbstractNameExtractor {
 			result.add(rankNameOptions);
 		}
 	}
-	
+
 }

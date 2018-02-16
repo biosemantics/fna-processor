@@ -17,24 +17,28 @@ import org.jdom2.xpath.XPathFactory;
 import edu.arizona.biosemantics.common.taxonomy.Rank;
 import edu.arizona.biosemantics.fnaprocessor.taxonname.Normalizer;
 
+/**
+ * Extracts name candidates by using a combinatorics approach and considering any name elements
+ */
 public class AnyNameExtractor extends AbstractNameExtractor {
 
+	@Override
 	protected LinkedHashMap<String, Set<String>> createRankNameOptions(Document document) {
 		XPathFactory xFactory = XPathFactory.instance();
 		XPathExpression<Element> acceptedNameExpression =
 				xFactory.compile("//taxon_identification[@status='ACCEPTED']/taxon_name", Filters.element());
-		XPathExpression<Element> synonymNameExpression = 
+		XPathExpression<Element> synonymNameExpression =
 				xFactory.compile("//taxon_identification[@status='SYNONYM']/taxon_name | "
 						+ "//taxon_identification[@status='BASONYM']/taxon_name", Filters.element());
-		
+
 		List<Element> acceptedNameElements = new ArrayList<Element>(acceptedNameExpression.evaluate(document));
 		List<Element> synonymNameElements = new ArrayList<Element>(synonymNameExpression.evaluate(document));
 		Comparator<Element> rankComparator = new Comparator<Element>() {
 			@Override
 			public int compare(Element o1, Element o2) {
-				return Rank.valueOf(o1.getAttribute("rank").getValue().trim().toUpperCase()).getId() - 
+				return Rank.valueOf(o1.getAttribute("rank").getValue().trim().toUpperCase()).getId() -
 						Rank.valueOf(o2.getAttribute("rank").getValue().trim().toUpperCase()).getId();
-			}	
+			}
 		};
 		acceptedNameElements.sort(rankComparator);
 		synonymNameElements.sort(rankComparator);
