@@ -34,7 +34,7 @@ public class KnownCsvReader {
 	}
 
 	/**
-	 * Reads a CSV format capturing file to eflora url mapping into a Map<String, File>
+	 * Reads a CSV format capturing file to eflora url mapping into a map
 	 * @param volumeUrl: The volume url for which to read the mappings
 	 * @return the map of url to file map
 	 * @throws FileNotFoundException if the file could not be found

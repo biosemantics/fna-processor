@@ -140,9 +140,9 @@ public class DefaultMapStateReporter implements MapStateReporter {
 	}
 
 	/**
-	 * Reports the crawl state to the log
-	 * @param crawlState: The state to report
-	 * @throws Exception if there was a problem reporting the state
+	 * @param crawlState: the state to get url info from
+	 * @param url: the url for which to get info
+	 * @return the url info for the given url from the given crawlState
 	 */
 	private String getUrlInfo(CrawlState crawlState, String url) {
 		return crawlState.getLinkName(url) + " (" + crawlState.getLinkText(url) + ") - " + url;
