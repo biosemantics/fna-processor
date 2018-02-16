@@ -3,6 +3,9 @@ package edu.arizona.biosemantics.fnaprocessor.run.map;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
+/**
+ * Entry point for the map phase
+ */
 public class Main {
 
 	public static void main(String[] args) throws Exception {

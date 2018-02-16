@@ -1,7 +1,6 @@
 package edu.arizona.biosemantics.fnaprocessor.run.fix;
 
 import java.io.File;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -10,25 +9,30 @@ import com.google.inject.name.Names;
 
 import edu.arizona.biosemantics.fnaprocessor.Configuration;
 import edu.arizona.biosemantics.fnaprocessor.eflorasmapper.MapStateProvider;
-import edu.arizona.biosemantics.fnaprocessor.eflorasmapper.SerializedMapStateProvider;
 import edu.arizona.biosemantics.fnaprocessor.eflorasmapper.known.KnownVolumeMapper;
 import edu.arizona.biosemantics.fnaprocessor.run.BaseConfig;
 import edu.arizona.biosemantics.fnaprocessor.run.Run;
 
+/**
+ * The configuration for the fix phase
+ */
 public class Config extends BaseConfig {
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	protected void configure() {
 		super.configure();
-		
+
 		Map<String, String> volumeUrlNameMap = new LinkedHashMap<String, String>();
 		Map<File, String> volumeDirUrlMap = new LinkedHashMap<File, String>();
 		Map<String, File> volumeUrlDirMap = new LinkedHashMap<String, File>();
-		
+
 		int[] volumes = new int[] {
-			6
+				6
 				//24
-			/*2,3,4,5,6,8,9,
+				/*2,3,4,5,6,8,9,
 			7,
 			19,
 			22,23,
@@ -55,27 +59,27 @@ public class Config extends BaseConfig {
 			case 22:
 				volumeDir = new File(Configuration.fnaTextProcessingDirectory + File.separator + "V" + volume + File.separator + "numerical_files");
 			}
-			
+
 			volumeUrlNameMap.put(volumeUrl, "v" + volume);
 			volumeDirUrlMap.put(volumeDir, volumeUrl);
 			volumeUrlDirMap.put(volumeUrl, volumeDir);
 		}
 
-		
+
 		bind(new TypeLiteral<Map<String, String>>() {}).annotatedWith(Names.named("volumeUrlNameMap"))
-			.toInstance(volumeUrlNameMap);
+		.toInstance(volumeUrlNameMap);
 		bind(new TypeLiteral<Map<File, String>>() {}).annotatedWith(Names.named("volumeDirUrlMap"))
-			.toInstance(volumeDirUrlMap);
+		.toInstance(volumeDirUrlMap);
 		bind(new TypeLiteral<Map<String, File>>() {}).annotatedWith(Names.named("volumeUrlDirMap"))
 		.toInstance(volumeUrlDirMap);
-		
-				
+
+
 		bind(File.class).annotatedWith(Names.named("volumesDir")).toInstance(new File(Configuration.fnaTextProcessingDirectory));
 		bind(Run.class).to(FixFnaVolumesRun.class);
-		
+
 		bind(MapStateProvider.class).annotatedWith(Names.named("serializedMapStateProvider")).to(KnownVolumeMapper.class);
 
 	}
-	
+
 
 }

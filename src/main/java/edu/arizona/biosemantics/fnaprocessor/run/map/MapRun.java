@@ -16,8 +16,11 @@ import edu.arizona.biosemantics.fnaprocessor.eflorasmapper.known.KnownCsvReader;
 import edu.arizona.biosemantics.fnaprocessor.eflorasmapper.known.KnownCsvWriter;
 import edu.arizona.biosemantics.fnaprocessor.run.Run;
 
+/**
+ * Run to map fna volumes to eflora documents
+ */
 public class MapRun implements Run {
-	
+
 	private static Logger logger = Logger.getLogger(MapRun.class);
 	private MapStateProvider mapStateProvider;
 	private Map<File, String> volumeDirUrlMap;
@@ -25,11 +28,19 @@ public class MapRun implements Run {
 	private DefaultMapStateReporter reporter;
 	private KnownCsvWriter knownCsvWriter;
 	private KnownCsvReader knownCsvReader;
-	
+
+	/**
+	 * @param mapStateProvider: The mapStateProvider to use to create the mapping
+	 * @param volumeDirUrlMap: to get the volume url from the volume dir
+	 * @param mapStateStorer: to store the created mapState
+	 * @param reporter: to report the created mapState
+	 * @param knownCsvWriter: to store the mapState to a CSV file
+	 * @param knownCsvReader: to initialize the mapState from a preexisting CSV file
+	 */
 	@Inject
 	public MapRun(MapStateProvider mapStateProvider,
 			@Named("volumeDirUrlMap")Map<File, String> volumeDirUrlMap,
-			MapStateStorer mapStateStorer, 
+			MapStateStorer mapStateStorer,
 			DefaultMapStateReporter reporter ,
 			KnownCsvWriter knownCsvWriter,
 			KnownCsvReader knownCsvReader) {
@@ -40,7 +51,10 @@ public class MapRun implements Run {
 		this.knownCsvWriter = knownCsvWriter;
 		this.knownCsvReader = knownCsvReader;
 	}
-	
+
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void run() throws Exception {
 		for(File volumeDir : volumeDirUrlMap.keySet()) {

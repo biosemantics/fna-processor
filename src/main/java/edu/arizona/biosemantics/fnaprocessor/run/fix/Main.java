@@ -3,6 +3,9 @@ package edu.arizona.biosemantics.fnaprocessor.run.fix;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
+/**
+ * Entry point for the fix phase
+ */
 public class Main {
 
 	public static void main(String[] args) throws Exception {

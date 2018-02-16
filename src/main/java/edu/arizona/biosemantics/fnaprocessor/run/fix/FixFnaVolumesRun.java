@@ -21,12 +21,27 @@ import edu.arizona.biosemantics.fnaprocessor.action.schemacheck.SchemaCheckActio
 import edu.arizona.biosemantics.fnaprocessor.action.taxonname.TaxonNameValidationAction;
 import edu.arizona.biosemantics.fnaprocessor.run.Run;
 
+/**
+ * Run to fix fna volumes from various problems for which there exist fixing actions
+ */
 public class FixFnaVolumesRun implements Run {
 
 	private List<VolumeAction> actions;
 	private File volumesDir;
 	private Map<File, String> volumeDirUrlMap;
 
+	/**
+	 * @param volumesDir: The volume dir to fix
+	 * @param volumeDirUrlMap: to map from volume dir to name
+	 * @param findDuplicateAction: To find duplicate files
+	 * @param taxonNameValidationAction: To find duplicate taxon names
+	 * @param keyAction: To add keys from eflora
+	 * @param distributionmapAction: To create distribution maps from eflora
+	 * @param printLocationAction: To add the print location in publication to the files
+	 * @param parenthesisAction: To check for unclosed parenthesis
+	 * @param schemaCheckAction: To check for XML file validity against schema
+	 * @param duplicateElementAction: To check for duplicate elements within a file andparent  element
+	 */
 	@Inject
 	public FixFnaVolumesRun(
 			@Named("volumesDir") File volumesDir,
@@ -57,6 +72,9 @@ public class FixFnaVolumesRun implements Run {
 		this.actions = new ArrayList<VolumeAction>(Arrays.asList(a));
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void run() throws Exception {
 		for(VolumeAction action : actions) {
