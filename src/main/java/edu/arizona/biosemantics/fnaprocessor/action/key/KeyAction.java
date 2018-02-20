@@ -187,11 +187,17 @@ public class KeyAction implements VolumeAction {
 		Element tableKeyTitleElement = document.selectFirst("#lblKeyTitle");
 		if(tableKeyTitleElement != null) {
 			String title = tableKeyTitleElement.text().trim();
-			if(title.isEmpty())
+
+			if(!title.isEmpty()) {
+				org.jdom2.Element keyHead = new org.jdom2.Element("key_head");
+				keyHead.setText(title);
+				result.addContent(keyHead);
+			}
+			/*if(title.isEmpty())
 				title = "NA";
 			org.jdom2.Element keyHead = new org.jdom2.Element("key_head");
 			keyHead.setText(title);
-			result.addContent(keyHead);
+			result.addContent(keyHead);*/
 		}
 
 		Element tableKeyContentElement = tableKeyElement.select("tbody > tr").get(1);
@@ -246,10 +252,10 @@ public class KeyAction implements VolumeAction {
 				result.addContent(determination);
 			} else {
 				logger.warn("Missing determination for key");
-
-				org.jdom2.Element determination = new org.jdom2.Element("determination");
+				/*	org.jdom2.Element determination = new org.jdom2.Element("determination");
 				determination.setText("NA");
 				result.addContent(determination);
+				 */
 			}
 		}
 
