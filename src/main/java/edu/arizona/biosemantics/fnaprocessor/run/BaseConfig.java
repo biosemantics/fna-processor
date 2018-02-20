@@ -23,7 +23,7 @@ public class BaseConfig extends AbstractModule {
 	 */
 	@Override
 	protected void configure() {
-		File crawlStateDir = new File("crawlState2");
+		File crawlStateDir = new File("crawlState");
 		crawlStateDir.mkdirs();
 		bind(File.class).annotatedWith(Names.named("serializedCrawlStateDir"))
 		.toInstance(crawlStateDir);

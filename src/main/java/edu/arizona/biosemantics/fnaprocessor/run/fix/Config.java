@@ -30,7 +30,7 @@ public class Config extends BaseConfig {
 		Map<String, File> volumeUrlDirMap = new LinkedHashMap<String, File>();
 
 		int[] volumes = new int[] {
-				6
+				3
 				//24
 				/*2,3,4,5,6,8,9,
 			7,
@@ -44,10 +44,10 @@ public class Config extends BaseConfig {
 			File volumeDir = new File(Configuration.fnaTextProcessingDirectory + File.separator + "V" + volume);
 			switch(volume) {
 			case 2:
-				volumeDir = new File(Configuration.fnaTextProcessingDirectory + File.separator + "V" + volume + File.separator + "numerical_files");
+				volumeDir = new File(Configuration.fnaTextProcessingDirectory + File.separator + "V" + volume);
 				break;
 			case 3:
-				volumeDir = new File(Configuration.fnaTextProcessingDirectory + File.separator + "V" + volume + File.separator + "numerical_files");
+				volumeDir = new File(Configuration.fnaTextProcessingDirectory + File.separator + "V" + volume);
 				break;
 			case 19:
 				//volume 19 is for 19-20-21 volumes since they are managed under one and the same url on efloras
@@ -57,7 +57,7 @@ public class Config extends BaseConfig {
 				}
 				break;
 			case 22:
-				volumeDir = new File(Configuration.fnaTextProcessingDirectory + File.separator + "V" + volume + File.separator + "numerical_files");
+				volumeDir = new File(Configuration.fnaTextProcessingDirectory + File.separator + "V" + volume);
 			}
 
 			volumeUrlNameMap.put(volumeUrl, "v" + volume);

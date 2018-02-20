@@ -10,7 +10,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
@@ -27,11 +26,7 @@ import com.google.inject.name.Named;
 import edu.arizona.biosemantics.common.taxonomy.Rank;
 import edu.arizona.biosemantics.fnaprocessor.eflorascrawler.CrawlState;
 import edu.arizona.biosemantics.fnaprocessor.eflorascrawler.CrawlStateProvider;
-import edu.arizona.biosemantics.fnaprocessor.eflorasmapper.DefaultMapStateReporter;
 import edu.arizona.biosemantics.fnaprocessor.eflorasmapper.MapState;
-import edu.arizona.biosemantics.fnaprocessor.taxonname.FileNameExtractor;
-import edu.arizona.biosemantics.fnaprocessor.taxonname.combinatorics.AcceptedNameExtractor;
-import edu.arizona.biosemantics.fnaprocessor.taxonname.combinatorics.AnyNameExtractor;
 
 /**
  * Writes a CSV format capturing file to eflora url mapping from a MapState
@@ -49,30 +44,19 @@ public class KnownCsvWriter {
 		}
 	};
 
-	private static Logger logger = Logger.getLogger(DefaultMapStateReporter.class);
-	private AcceptedNameExtractor acceptedNameExtractor;
-	private AnyNameExtractor anyNameExtractor;
-	private FileNameExtractor fileNameExtractor;
 	private CrawlStateProvider crawlStateProvider;
 	private Map<String, File> volumeUrlDirMap;
 	private Map<String, String> volumeUrlNameMap;
 
 	/**
-	 * @param acceptedNameExtractor: to display the accepted name of a file
-	 * @param anyNameExtractor: to display any name extracted from a file
-	 * @param fileNameExtractor: to extract the file name from a file
 	 * @param crawlStateProvider: to know about cawled urls and documents
 	 * @param volumeUrlDirMap: to map from volume url to dir
 	 * @param volumeUrlNameMap: to map from volume url to name
 	 */
 	@Inject
-	public KnownCsvWriter(AcceptedNameExtractor acceptedNameExtractor, AnyNameExtractor anyNameExtractor,
-			FileNameExtractor fileNameExtractor, CrawlStateProvider crawlStateProvider,
+	public KnownCsvWriter(CrawlStateProvider crawlStateProvider,
 			@Named("volumeUrlDirMap") Map<String, File> volumeUrlDirMap,
 			@Named("volumeUrlNameMap")Map<String, String> volumeUrlNameMap) {
-		this.acceptedNameExtractor = acceptedNameExtractor;
-		this.anyNameExtractor = anyNameExtractor;
-		this.fileNameExtractor = fileNameExtractor;
 		this.crawlStateProvider = crawlStateProvider;
 		this.volumeUrlDirMap = volumeUrlDirMap;
 		this.volumeUrlNameMap = volumeUrlNameMap;

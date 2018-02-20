@@ -21,6 +21,10 @@ import org.jsoup.nodes.Document;
 public class CrawlState implements Serializable {
 
 	/**
+	 *
+	 */
+	private static final long serialVersionUID = -4187078225958672835L;
+	/**
 	 * url to document map
 	 */
 	private Map<String, String> urlDocumentMap = new HashMap<String, String>();

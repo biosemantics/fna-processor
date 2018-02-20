@@ -11,6 +11,7 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
 import edu.arizona.biosemantics.fnaprocessor.action.VolumeAction;
+import edu.arizona.biosemantics.fnaprocessor.action.author.AuthorAction;
 import edu.arizona.biosemantics.fnaprocessor.action.distributionmap.DistributionMapAction;
 import edu.arizona.biosemantics.fnaprocessor.action.duplicate.FindDuplicateAction;
 import edu.arizona.biosemantics.fnaprocessor.action.duplicateelement.DuplicateElementAction;
@@ -33,6 +34,7 @@ public class FixFnaVolumesRun implements Run {
 	/**
 	 * @param volumesDir: The volume dir to fix
 	 * @param volumeDirUrlMap: to map from volume dir to name
+	 * @param authorAction: to extract author information from eflora
 	 * @param findDuplicateAction: To find duplicate files
 	 * @param taxonNameValidationAction: To find duplicate taxon names
 	 * @param keyAction: To add keys from eflora
@@ -46,6 +48,7 @@ public class FixFnaVolumesRun implements Run {
 	public FixFnaVolumesRun(
 			@Named("volumesDir") File volumesDir,
 			@Named("volumeDirUrlMap") Map<File, String> volumeDirUrlMap,
+			AuthorAction authorAction,
 			FindDuplicateAction findDuplicateAction,
 			TaxonNameValidationAction taxonNameValidationAction,
 			KeyAction keyAction,
@@ -58,15 +61,16 @@ public class FixFnaVolumesRun implements Run {
 			) {
 		this.volumesDir = volumesDir;
 		VolumeAction[] a = {
-				findDuplicateAction,
+				authorAction,
+				/*findDuplicateAction,
 				taxonNameValidationAction,
 				printLocationAction,
 				distributionMapAction,
 				keyAction,
 				parenthesisAction,
-				//schemaAction,*/
+				//schemaAction,
 				duplicateElementAction,
-				schemaCheckAction
+				schemaCheckAction*/
 		};
 		this.volumeDirUrlMap = volumeDirUrlMap;
 		this.actions = new ArrayList<VolumeAction>(Arrays.asList(a));
