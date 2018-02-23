@@ -24,12 +24,8 @@ import org.jdom2.output.XMLOutputter;
 import org.jdom2.xpath.XPathExpression;
 import org.jdom2.xpath.XPathFactory;
 
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
-
 import edu.arizona.biosemantics.fnaprocessor.action.VolumeAction;
 import edu.arizona.biosemantics.fnaprocessor.eflorascrawler.CrawlState;
-import edu.arizona.biosemantics.fnaprocessor.eflorascrawler.CrawlStateProvider;
 
 /**
  * ConvertOldSchemaAction converts files of a volume directory that are valid against an old version
@@ -38,20 +34,7 @@ import edu.arizona.biosemantics.fnaprocessor.eflorascrawler.CrawlStateProvider;
 public class ConvertOldSchemaAction implements VolumeAction {
 
 	private static final Logger logger = Logger.getLogger(ConvertOldSchemaAction.class);
-	private CrawlStateProvider crawlStateProvider;
 	private Map<File, String> volumeDirUrlMap;
-
-	/**
-	 * @param crawlStateProvider to use to retrieve crawled eflora documents
-	 * @param volumeDirUrlMap to find the eflora volume url for a given volume dir
-	 */
-	@Inject
-	public ConvertOldSchemaAction(
-			CrawlStateProvider crawlStateProvider,
-			@Named("volumeDirUrlMap")Map<File, String> volumeDirUrlMap) {
-		this.volumeDirUrlMap = volumeDirUrlMap;
-		this.crawlStateProvider = crawlStateProvider;
-	}
 
 	/**
 	 * {@inheritDoc}
@@ -59,9 +42,6 @@ public class ConvertOldSchemaAction implements VolumeAction {
 	@Override
 	public void run(File volumeDir) throws Exception {
 		logger.info("Fix Schema for volume " + volumeDir);
-
-		String volumeUrl = this.volumeDirUrlMap.get(volumeDir);
-		CrawlState crawlState = this.crawlStateProvider.getCrawlState(volumeUrl);
 
 		for(File file : volumeDir.listFiles(new FileFilter() {
 			@Override
@@ -77,6 +57,83 @@ public class ConvertOldSchemaAction implements VolumeAction {
 				document = saxBuilder.build(file);
 
 				XPathFactory xPathFactory = XPathFactory.instance();
+
+				/**
+				 * This was a key format that was used in FNA v24 and v25 and is likely not used elsewhere
+				 */
+				XPathExpression<Element> keyMatcher =
+						xPathFactory.compile("/bio:treatment/key", Filters.element(),
+								null, Namespace.getNamespace("bio", "http://www.github.com/biosemantics"));
+				List<Element> keyElements = keyMatcher.evaluate(document);
+				for(Element key : keyElements) {
+					Element keyAuthors = key.getChild("key_authors");
+
+					if(keyAuthors != null) {
+						keyAuthors.detach();
+						keyAuthors.setName("key_author");
+					}
+					Element keyHeading = key.getChild("key_heading");
+					if(keyHeading != null) {
+						keyHeading.detach();
+						keyHeading.setName("key_head");
+					}
+					Element keyDiscussion = key.getChild("key_discussion");
+					if(keyDiscussion != null) {
+						keyDiscussion.detach();
+						keyDiscussion.setName("discussion");
+					}
+
+					if(keyHeading != null)
+						key.addContent(keyHeading);
+					if(keyAuthors != null)
+						key.addContent(keyAuthors);
+					if(keyDiscussion != null)
+						key.addContent(keyDiscussion);
+
+					Element keyBody = key.getChild("key_body");
+					if(keyBody != null) {
+						String keyText = keyBody.getText();
+						String[] lines = keyText.split("\n");
+						for(String line : lines) {
+							System.out.println(line);
+
+							line = line.trim();
+							if(line.isEmpty())
+								continue;
+							if(line.startsWith("[<="))
+								continue;
+							String statementId = line.split(" ")[0];
+							//try to parse to exclude lines that accidentally ended on a newline - force exception here
+							Integer.parseInt(statementId.replace(".", ""));
+							String description = getKeyDescription(line);
+							String determination = getDetermination(line);
+							String nextStatement = null;
+							if(determination == null)
+								nextStatement = getNextStatement(line);
+							Element statement = new Element("key_statement");
+							key.addContent(statement);
+							Element statementIdEl = new Element("statement_id");
+							statementIdEl.setText(statementId);
+							statement.addContent(statementIdEl);
+							Element descriptionEl = new Element("description");
+							descriptionEl.setAttribute("type", "morphology");
+							descriptionEl.setText(description);
+							statement.addContent(descriptionEl);
+							if(determination != null) {
+								Element determinationEl = new Element("determination");
+								determinationEl.setText(determination);
+								statement.addContent(determinationEl);
+							}
+							if(nextStatement != null) {
+								Element nextStatementEl = new Element("next_statement_id");
+								nextStatementEl.setText(nextStatement);
+								statement.addContent(nextStatementEl);
+							}
+						}
+						keyBody.detach();
+					}
+				}
+
 
 				XPathExpression<Element> sourceMatcher =
 						xPathFactory.compile("/bio:treatment/meta/source", Filters.element(),
@@ -145,7 +202,7 @@ public class ConvertOldSchemaAction implements VolumeAction {
 					taxonIdentificationElement.addContent(taxonNameElement);
 				}
 
-				XPathExpression<Element> commonNamesMatcher =
+				/*XPathExpression<Element> commonNamesMatcher =
 						xPathFactory.compile("/bio:treatment/common_names", Filters.element(),
 								null, Namespace.getNamespace("bio", "http://www.github.com/biosemantics"));
 				List<Element> commonNamesElements = commonNamesMatcher.evaluate(document);
@@ -166,7 +223,7 @@ public class ConvertOldSchemaAction implements VolumeAction {
 							parent.indexOf(
 									taxonIdentificationElements.get(taxonIdentificationElements.size() - 1)) + 1,
 									taxonIdentificationElement);
-				}
+				}*/
 
 				if(!numberElements.isEmpty() && !taxonIdentificationElements.isEmpty()) {
 					Element parent = numberElements.get(0).getParentElement();
@@ -189,7 +246,7 @@ public class ConvertOldSchemaAction implements VolumeAction {
 				List<Element> descriptionElements = descriptionMatcher.evaluate(document);
 				for(Element descriptionElement : new ArrayList<Element>(descriptionElements)) {
 					if(descriptionElement.getText().isEmpty())
-						descriptionElement.setText("empty");
+						descriptionElement.detach();
 				}
 
 				XPathExpression<Element> referenceMatcher =
@@ -202,12 +259,70 @@ public class ConvertOldSchemaAction implements VolumeAction {
 					referenceElement.setText("");
 					referenceElement.addContent(refElement);
 				}
+
+				XPathExpression<Element> commonNamesMatcher =
+						xPathFactory.compile("/bio:treatment/common_names", Filters.element(),
+								null, Namespace.getNamespace("bio", "http://www.github.com/biosemantics"));
+				List<Element> commonNamesElements = commonNamesMatcher.evaluate(document);
+				for(Element commonNamesElement : new ArrayList<Element>(commonNamesElements)) {
+					commonNamesElement.setName("other_name");
+					commonNamesElement.setAttribute("type", "common_name");
+				}
+
 				writeToFile(document, file);
 			} catch (JDOMException | IOException e) {
 				e.printStackTrace();
 				logger.error("SAXBuilder cannot build "+(file.getName())+ ".");
 			}
 		}
+	}
+
+	private String getNextStatement(String line) {
+		String[] parts = line.split(" ");
+		String statementId = parts[0];
+		return (Integer.parseInt(statementId.replace(".", "")) + 1) + ".";
+	}
+
+	private String getDetermination(String line) {
+		String[] parts = line.split(" ");
+		StringBuffer sb = new StringBuffer();
+		boolean foundDelimiter = false;
+		if(parts.length > 1) {
+			for(int i=1; i<parts.length; i++) {
+				String p = parts[i];
+				if(p.contains(".....")) {
+					String[] delimiterParts = p.split("\\.\\.\\.\\.\\.");
+					if(delimiterParts.length > 1)
+						sb.append(delimiterParts[1] + " ");
+					foundDelimiter = true;
+				} else if(foundDelimiter) {
+					sb.append(p + " ");
+				}
+			}
+			if(foundDelimiter)
+				return sb.toString();
+		}
+		return null;
+	}
+
+	private String getKeyDescription(String line) {
+		String[] parts = line.split(" ");
+		StringBuffer sb = new StringBuffer();
+		if(parts.length > 1) {
+			for(int i=1; i<parts.length; i++) {
+				String p = parts[i];
+				if(p.contains(".....")) {
+					String[] delimiterParts = p.split("\\.\\.\\.\\.\\.");
+					if(delimiterParts.length > 0)
+						sb.append(delimiterParts[0]);
+					return sb.toString();
+				} else {
+					sb.append(p + " ");
+				}
+			}
+			return sb.toString();
+		}
+		return "";
 	}
 
 	/**
@@ -280,7 +395,7 @@ public class ConvertOldSchemaAction implements VolumeAction {
 	private static void fixXmlMalformedIssues(File file) throws IOException {
 		StringBuffer sb = new StringBuffer();
 		try(BufferedReader br = new BufferedReader(new FileReader(file))) {
-			boolean insideKey = false;
+			//boolean insideKey = false;
 			while(br.ready()) {
 				String line = br.readLine();
 
@@ -295,16 +410,19 @@ public class ConvertOldSchemaAction implements VolumeAction {
 
 				line = line.replaceAll("(< 45°)", "(&lt; 45°)");
 
-				if(!insideKey && !line.contains("<key>")) {
-					sb.append(line + "\n");
-				}
+				line = line.replaceAll("\\[<=", "[&lt;=");
 
-				if(line.contains("<key>")) {
+				sb.append(line + "\n");
+				/*if(!insideKey && !line.contains("<key>")) {
+					sb.append(line + "\n");
+				}*/
+
+				/*if(line.contains("<key>")) {
 					insideKey = true;
 				}
 				if(line.contains("</key>")) {
 					insideKey = false;
-				}
+				}*/
 			}
 		}
 		try(OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8)) {

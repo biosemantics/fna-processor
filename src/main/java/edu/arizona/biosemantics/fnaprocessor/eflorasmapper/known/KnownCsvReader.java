@@ -42,11 +42,14 @@ public class KnownCsvReader {
 	 */
 	public Map<String, File> read(String volumeUrl) throws FileNotFoundException, IOException {
 		Map<String, File> result = new HashMap<String, File>();
-		File known = new File("known-" + volumeUrlNameMap.get(volumeUrl) + ".csv");
+		File known = new File("updated_with_beatriz_known-" + volumeUrlNameMap.get(volumeUrl) + ".csv");
 		if(known.exists() && known.isFile()) {
-			try(CSVReader reader = new CSVReader(new FileReader(new File("known-" + volumeUrlNameMap.get(volumeUrl) + ".csv")))) {
+			try(CSVReader reader = new CSVReader(new FileReader(known))) {
 				List<String[]> lines = reader.readAll();
 				for(String[] line : lines) {
+					if(line[0].contains("470.xml"))
+						System.out.println();
+					System.out.println(line[0] + " " + line[1]);
 					if(line[0].trim().isEmpty() || line[1].trim().isEmpty())
 						continue;
 
@@ -56,10 +59,16 @@ public class KnownCsvReader {
 					if(line[1].contains(")")) {
 						line[1] = line[1].split("\\)")[1].trim();
 					}
+
+					System.out.println(line[1]);
+					System.out.println(new File(volumeUrlDirMap.get(volumeUrl), line[0]));
 					result.put(line[1], new File(volumeUrlDirMap.get(volumeUrl), line[0]));
 				}
 			}
 		}
+
+		System.out.println(result.containsKey("http://www.efloras.org/florataxon.aspx?flora_id=1&taxon_id=127971"));
+		System.out.println(result.get("http://www.efloras.org/florataxon.aspx?flora_id=1&taxon_id=127971"));
 		return result;
 	}
 
