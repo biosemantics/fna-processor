@@ -32,7 +32,6 @@ import edu.arizona.biosemantics.fnaprocessor.eflorascrawler.CrawlState;
  * of Charaparser's input schema to files valid against the latest version of Charaparser's input schema.
  */
 public class ConvertOldSchemaAction implements VolumeAction {
-
 	private static final Logger logger = Logger.getLogger(ConvertOldSchemaAction.class);
 	private Map<File, String> volumeDirUrlMap;
 
@@ -152,10 +151,10 @@ public class ConvertOldSchemaAction implements VolumeAction {
 					if(authorElement != null)
 						sourceElement.addContent(authorElement);
 					if(authorElement.getText().isEmpty())
-						authorElement.setText("NA");
+						authorElement.setText("unknown");
 					if(dateElement == null) {
 						dateElement = new Element("date");
-						dateElement.setText("NA");
+						dateElement.setText("unknown");
 					}
 					sourceElement.addContent(dateElement);
 					if(titleElement != null)
@@ -230,7 +229,7 @@ public class ConvertOldSchemaAction implements VolumeAction {
 					for(Element numberElement : numberElements) {
 						numberElement.detach();
 						if(numberElement.getText().isEmpty())
-							numberElement.setText("NA");
+							numberElement.setText("unknown");
 					}
 
 
