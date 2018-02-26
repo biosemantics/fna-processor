@@ -30,7 +30,7 @@ public class Config extends BaseConfig {
 		Map<String, File> volumeUrlDirMap = new LinkedHashMap<String, File>();
 
 		int[] volumes = new int[] {
-				3
+				24, 25
 				//24
 				/*2,3,4,5,6,8,9,
 			7,
@@ -78,7 +78,7 @@ public class Config extends BaseConfig {
 		bind(Run.class).to(FixFnaVolumesRun.class);
 
 		bind(MapStateProvider.class).annotatedWith(Names.named("serializedMapStateProvider")).to(KnownVolumeMapper.class);
-
+		bind(Boolean.class).annotatedWith(Names.named("removeExistingKeys")).toInstance(true);
 	}
 
 

@@ -46,20 +46,25 @@ public class KeyAction implements VolumeAction {
 
 	private HrefResolver hrefResolver;
 
+	private boolean removeExistingKeys;
+
 	/**
 	 * @param crawlStateProvider to use to retrieve crawled eflora documents
 	 * @param mapStateProvider to find the eflora documents mapped to a volume file
 	 * @param hrefResolver to use to follow eflora hyperlinks
 	 * @param volumeDirUrlMap to find the eflora volume url for a given volume dir
+	 * @param removeExistingKeys decides whether the existing keys should be removed first
 	 */
 	@Inject
 	public KeyAction(CrawlStateProvider crawlStateProvider, HrefResolver hrefResolver,
 			@Named("serializedMapStateProvider") MapStateProvider mapStateProvider,
-			@Named("volumeDirUrlMap") Map<File, String> volumeDirUrlMap) {
+			@Named("volumeDirUrlMap") Map<File, String> volumeDirUrlMap,
+			@Named("removeExistingKeys") boolean removeExistingKeys) {
 		this.mapStateProvider = mapStateProvider;
 		this.hrefResolver = hrefResolver;
 		this.crawlStateProvider = crawlStateProvider;
 		this.volumeDirUrlMap = volumeDirUrlMap;
+		this.removeExistingKeys = removeExistingKeys;
 	}
 
 	/**
@@ -83,8 +88,8 @@ public class KeyAction implements VolumeAction {
 				logger.info("Create key for file/url " + file.getName() + " " + url);
 
 				List<org.jdom2.Element> keyElements = createKeyElements(url, efloraDocument);
-				//if(!keyElements.isEmpty())
-				//	removeKeyElement(file);
+				if(removeExistingKeys && !keyElements.isEmpty())
+					removeKeyElement(file);
 				//else
 				if(keyElements.isEmpty())
 					logger.warn("Did not find lblKey element for file/url" + file + " (" + url + ")");

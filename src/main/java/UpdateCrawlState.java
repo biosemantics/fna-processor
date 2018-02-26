@@ -24,15 +24,11 @@ public class UpdateCrawlState {
 		Map<String, File> volumeUrlDirMap = new LinkedHashMap<String, File>();
 
 		int[] volumes = new int[] {
-				24, 25
-				//6
-				//24
-				/*2,3,4,5,6,8,9,
+				2,3,4,5,6,8,9,
 				7,
 				19,
 				22,23,
-				24, 25,
-				26,27,28*/
+				26,27,28
 		};
 		for(int volume : volumes) {
 			String volumeUrl = "http://www.efloras.org/volume_page.aspx?volume_id=10" + String.format("%02d", volume) + "&flora_id=1";
@@ -86,11 +82,11 @@ public class UpdateCrawlState {
 				})) {
 					System.out.println(i++);
 
-					for(File mFile : mapState.getMappedFiles()) {
-						System.out.println(mFile.getAbsolutePath());
-					}
-
 					String url = mapState.getUrl(file);
+					if(url == null || url.trim().isEmpty()) {
+						System.out.println("--> No url for " + file.getName() + " " + url);
+						continue;
+					}
 					if(!crawlState.containsUrlDocumentMapping(url)) {
 						Document document = Jsoup.connect(url).get();
 						crawlState.putUrlDocumentMapping(url, document);
@@ -100,7 +96,7 @@ public class UpdateCrawlState {
 					}
 				}
 
-				SerializedCrawlStateStorer storer = new SerializedCrawlStateStorer(new File("crawlState_after_updated_beatriz"), volumeUrlNameMap);
+				SerializedCrawlStateStorer storer = new SerializedCrawlStateStorer(new File("crawlState_updated_known_Feb22"), volumeUrlNameMap);
 				storer.store(crawlState);
 			}
 		}

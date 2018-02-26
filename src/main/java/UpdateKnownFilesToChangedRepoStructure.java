@@ -25,7 +25,6 @@ public class UpdateKnownFilesToChangedRepoStructure {
 				7,
 				19,
 				22,23,
-				//24, 25,
 				26,27,28
 		};
 		for(int volume : volumes) {
@@ -66,13 +65,13 @@ public class UpdateKnownFilesToChangedRepoStructure {
 			String volumeUrl = volumeDirUrlMap.get(volumeDir);
 			String volumeName = volumeUrlNameMap.get(volumeUrl);
 
-			File known = new File("updated_with_beatriz_known-" + volumeName + ".csv");
+			File known = new File("updated_known-" + volumeName + "-Feb22.csv");
 			if(known.exists() && known.isFile()) {
 				try(CSVReader reader = new CSVReader(new FileReader(known))) {
 					List<String[]> lines = reader.readAll();
 					for(String[] line : lines) {
-						if(line[0].trim().isEmpty() || line[1].trim().isEmpty())
-							continue;
+						//if(line[0].trim().isEmpty() || line[1].trim().isEmpty())
+						//	continue;
 
 						if(line[0].contains(")")) {
 							line[0] = line[0].split("\\)")[1].trim();

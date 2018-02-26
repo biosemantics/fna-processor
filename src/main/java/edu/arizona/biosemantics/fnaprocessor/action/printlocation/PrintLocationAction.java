@@ -116,7 +116,7 @@ public class PrintLocationAction implements VolumeAction {
 						null, Namespace.getNamespace("bio", "http://www.github.com/biosemantics"));
 		org.jdom2.Element sourceElement =  authorMatcher.evaluateFirst(document);
 		if(sourceElement != null) {
-			org.jdom2.Element otherInfoElement = new org.jdom2.Element("other_info_on_meta");
+			org.jdom2.Element otherInfoElement = new org.jdom2.Element("print_location");
 			otherInfoElement.setText(text);
 			sourceElement.addContent(otherInfoElement);
 			writeToFile(document, file);

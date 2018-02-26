@@ -35,7 +35,6 @@ public class KnownVolumeMapper implements MapStateProvider {
 			throws Exception {
 		Map<String, File> knownMapping = this.knownCsvReader.read(mapState.getVolumeUrl());
 		for(String url : knownMapping.keySet()) {
-			System.out.println("url: " + url + " - " + knownMapping.get(url));
 			mapState.putFileUrlMap(knownMapping.get(url), url, this.getClass());
 		}
 		logger.trace("Done mapping known urls");

@@ -61,16 +61,16 @@ public class FixFnaVolumesRun implements Run {
 			) {
 		this.volumesDir = volumesDir;
 		VolumeAction[] a = {
-				authorAction,
-				/*findDuplicateAction,
+				//authorAction,
+				findDuplicateAction,
 				taxonNameValidationAction,
-				printLocationAction,
-				distributionMapAction,
-				keyAction,
+				//printLocationAction,
+				//distributionMapAction,
+				//keyAction,
 				parenthesisAction,
 				//schemaAction,
 				duplicateElementAction,
-				schemaCheckAction*/
+				schemaCheckAction
 		};
 		this.volumeDirUrlMap = volumeDirUrlMap;
 		this.actions = new ArrayList<VolumeAction>(Arrays.asList(a));
