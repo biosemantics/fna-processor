@@ -8,8 +8,10 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.jdom2.JDOMException;
@@ -111,17 +113,24 @@ public class KeyAction implements VolumeAction {
 	 * @throws IOException if there was a problem extracting the keys from the eflora document
 	 */
 	private List<org.jdom2.Element> createKeyElements(String url, Document efloraDocument) throws IOException {
+		Set<String> visitedKeys = new HashSet<String>();
 		List<org.jdom2.Element> result = new ArrayList<org.jdom2.Element>();
 		org.jdom2.Element key = createKeyElement(efloraDocument);
-		if(key != null)
+
+		if(key != null && key.getChildren("key_statement").size() > 0)
 			result.add(key);
+		visitedKeys.add(url.trim());
 
 		Element keyListElement = efloraDocument.selectFirst("#lblKeyList");
 		if(keyListElement != null) {
 			for(Element keyHref : keyListElement.select("ul > li > a")) {
-				Document alternativeKeyDoc = Jsoup.connect(hrefResolver.getBaseUrl(url) + "/" + keyHref.attr("href")).get();
-				org.jdom2.Element altKey = createKeyElement(alternativeKeyDoc);
-				result.add(altKey);
+				String keyUrl = hrefResolver.getBaseUrl(url) + "/" + keyHref.attr("href").trim();
+				if(!visitedKeys.contains(keyUrl)) {
+					Document alternativeKeyDoc = Jsoup.connect(keyUrl).get();
+					org.jdom2.Element altKey = createKeyElement(alternativeKeyDoc);
+					if(altKey != null && altKey.getChildren("key_statement").size() > 0)
+						result.add(altKey);
+				}
 			}
 		}
 		return result;
@@ -273,13 +282,15 @@ public class KeyAction implements VolumeAction {
 	}
 
 	/*public static void main(String[] args) throws IOException {
-		Document doc = Jsoup.connect("http://www.efloras.org/florataxon.aspx?flora_id=1&taxon_id=10074").get();
-		org.jdom2.Element result = KeyAction.createKeyElement(doc);
+		String url = "http://www.efloras.org/florataxon.aspx?flora_id=1&taxon_id=107139";
+		Document doc = Jsoup.connect(url).get();
+		List<org.jdom2.Element> result = KeyAction.createKeyElements(url, doc);
 
 
 		XMLOutputter outputter = new XMLOutputter();
 		outputter.setFormat(Format.getPrettyFormat());
-		outputter.output(result, System.out);
+		for(org.jdom2.Element e : result)
+			outputter.output(result, System.out);
 	}*/
 
 }

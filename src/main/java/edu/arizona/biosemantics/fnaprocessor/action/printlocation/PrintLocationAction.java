@@ -7,6 +7,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -116,11 +118,119 @@ public class PrintLocationAction implements VolumeAction {
 						null, Namespace.getNamespace("bio", "http://www.github.com/biosemantics"));
 		org.jdom2.Element sourceElement =  authorMatcher.evaluateFirst(document);
 		if(sourceElement != null) {
-			org.jdom2.Element otherInfoElement = new org.jdom2.Element("print_location");
-			otherInfoElement.setText(text);
+			String vol = getVolume(text);
+			org.jdom2.Element otherInfoElement = new org.jdom2.Element("other_info_on_meta");
+			otherInfoElement.setText(vol);
+			otherInfoElement.setAttribute("type", "volume");
 			sourceElement.addContent(otherInfoElement);
+
+			List<String> mentionPages = getMentionPages(text);
+			for(String page : mentionPages) {
+				otherInfoElement = new org.jdom2.Element("other_info_on_meta");
+				otherInfoElement.setText(page);
+				otherInfoElement.setAttribute("type", "mention_page");
+				sourceElement.addContent(otherInfoElement);
+			}
+
+			List<String> treatmentPages = getTreatmentPages(text);
+			for(String page : treatmentPages) {
+				otherInfoElement = new org.jdom2.Element("other_info_on_meta");
+				otherInfoElement.setText(page);
+				otherInfoElement.setAttribute("type", "treatment_page");
+				sourceElement.addContent(otherInfoElement);
+			}
+
+			List<String> illustrationPages = getIllustrationPages(text);
+			for(String page : illustrationPages) {
+				otherInfoElement = new org.jdom2.Element("other_info_on_meta");
+				otherInfoElement.setText(page);
+				otherInfoElement.setAttribute("type", "illustration_page");
+				sourceElement.addContent(otherInfoElement);
+			}
 			writeToFile(document, file);
 		}
+	}
+
+	public static void main(String[] args) {
+		String text = "FNA Vol. 20 Page 3,9, 11, 12, <i>14</i>, 17, 36, 204, <b>256</b>, 257, 334";
+		System.out.println(getVolume(text));
+		System.out.println(getMentionPages(text));
+		System.out.println(getTreatmentPages(text));
+		System.out.println(getIllustrationPages(text));
+	}
+
+	private static String getVolume(String text) {
+		String volume = text.replaceAll("FNA Vol. ", "");
+		return volume.split(" ")[0];
+	}
+
+	private static List<String> getMentionPages(String text) {
+		List<String> result = new ArrayList<String>();
+		if(text.contains(" Page ")) {
+			String pagesText = text.split(" Page ")[1];
+			String pages[] = pagesText.split(",");
+			for(String page : pages) {
+				page = page.trim();
+				if(page.startsWith("<b>")) {
+					page = page.replaceAll("<b>", "");
+					page = page.replaceAll("</b>", "");
+					continue;
+				} else if(page.startsWith("<i>")) {
+					page = page.replaceAll("<i>", "");
+					page = page.replaceAll("</i>", "");
+					continue;
+				} else {
+					result.add(page);
+				}
+			}
+		}
+		return result;
+	}
+
+	private static List<String> getTreatmentPages(String text) {
+		List<String> result = new ArrayList<String>();
+		if(text.contains(" Page ")) {
+			String pagesText = text.split(" Page ")[1];
+			String pages[] = pagesText.split(",");
+			for(String page : pages) {
+				page = page.trim();
+				if(page.startsWith("<b>")) {
+					page = page.replaceAll("<b>", "");
+					page = page.replaceAll("</b>", "");
+					result.add(page);
+				} else if(page.startsWith("<i>")) {
+					page = page.replaceAll("<i>", "");
+					page = page.replaceAll("</i>", "");
+					continue;
+				} else {
+					continue;
+				}
+			}
+		}
+		return result;
+	}
+
+	private static List<String> getIllustrationPages(String text) {
+		List<String> result = new ArrayList<String>();
+		if(text.contains(" Page ")) {
+			String pagesText = text.split(" Page ")[1];
+			String pages[] = pagesText.split(",");
+			for(String page : pages) {
+				page = page.trim();
+				if(page.startsWith("<b>")) {
+					page = page.replaceAll("<b>", "");
+					page = page.replaceAll("</b>", "");
+					continue;
+				} else if(page.startsWith("<i>")) {
+					page = page.replaceAll("<i>", "");
+					page = page.replaceAll("</i>", "");
+					result.add(page);
+				} else {
+					continue;
+				}
+			}
+		}
+		return result;
 	}
 
 	/**
