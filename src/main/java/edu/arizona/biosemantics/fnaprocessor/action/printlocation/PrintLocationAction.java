@@ -113,23 +113,23 @@ public class PrintLocationAction implements VolumeAction {
 		}
 
 		XPathFactory xPathFactory = XPathFactory.instance();
-		XPathExpression<org.jdom2.Element> authorMatcher =
-				xPathFactory.compile("//meta/source", Filters.element(),
+		XPathExpression<org.jdom2.Element> metaMatcher =
+				xPathFactory.compile("//meta", Filters.element(),
 						null, Namespace.getNamespace("bio", "http://www.github.com/biosemantics"));
-		org.jdom2.Element sourceElement =  authorMatcher.evaluateFirst(document);
-		if(sourceElement != null) {
+		org.jdom2.Element metaElement =  metaMatcher.evaluateFirst(document);
+		if(metaElement != null) {
 			String vol = getVolume(text);
 			org.jdom2.Element otherInfoElement = new org.jdom2.Element("other_info_on_meta");
 			otherInfoElement.setText(vol);
 			otherInfoElement.setAttribute("type", "volume");
-			sourceElement.addContent(otherInfoElement);
+			metaElement.addContent(otherInfoElement);
 
 			List<String> mentionPages = getMentionPages(text);
 			for(String page : mentionPages) {
 				otherInfoElement = new org.jdom2.Element("other_info_on_meta");
 				otherInfoElement.setText(page);
 				otherInfoElement.setAttribute("type", "mention_page");
-				sourceElement.addContent(otherInfoElement);
+				metaElement.addContent(otherInfoElement);
 			}
 
 			List<String> treatmentPages = getTreatmentPages(text);
@@ -137,7 +137,7 @@ public class PrintLocationAction implements VolumeAction {
 				otherInfoElement = new org.jdom2.Element("other_info_on_meta");
 				otherInfoElement.setText(page);
 				otherInfoElement.setAttribute("type", "treatment_page");
-				sourceElement.addContent(otherInfoElement);
+				metaElement.addContent(otherInfoElement);
 			}
 
 			List<String> illustrationPages = getIllustrationPages(text);
@@ -145,7 +145,7 @@ public class PrintLocationAction implements VolumeAction {
 				otherInfoElement = new org.jdom2.Element("other_info_on_meta");
 				otherInfoElement.setText(page);
 				otherInfoElement.setAttribute("type", "illustration_page");
-				sourceElement.addContent(otherInfoElement);
+				metaElement.addContent(otherInfoElement);
 			}
 			writeToFile(document, file);
 		}
